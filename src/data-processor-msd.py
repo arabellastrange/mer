@@ -2,9 +2,12 @@ import sqlite3
 import h5py
 import tensorflow as tf
 import pandas as pd
+import numpy as np
+
 
 # .db file from additional files of dataset
 metadata = sqlite3.connect("C:/Users/User/PycharmProjects/mer-ml/resources/subset_track_metadata.db")
+
 # a single track information from dataset
 # TODO convert file to panda dataframe
 song = h5py.File("C:/Users/User/PycharmProjects/mer-ml/resources/TRABBKX128F4285205.h5", 'r')
@@ -21,6 +24,10 @@ print("Keys of song dataset: ")
 print(*keys)
 print("Song metadata keys: ")
 print(song.get("metadata").keys())
+print("Song analysis keys: ")
+print(song.get("analysis").keys())
+print("Song musicbrainz keys: ")
+print(song.get("musicbrainz").keys())
 
 # load into tensorflow
 # dataset = tf.data.Dataset.from_tensor_slices(metaDataFrame.values)
