@@ -77,6 +77,8 @@ apply_to_all_files(msd_subset_data_path, func=func_to_get_artist_name)
 t2 = time.time()
 print('all artist names extracted in:', strtimedelta(t1, t2))
 
+#############################################################################
+
 # .db file from additional files of dataset
 metadata = sqlite3.connect("/resources/subset_track_metadata.db")
 

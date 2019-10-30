@@ -2,7 +2,7 @@
 from PyLyrics import *
 import pandas as pd
 
-#fetch song
+#fetch song - next step iterate over all songs from the DataFrame
 artist = 'Foster The People'
 title = 'SHC'
 lyrics = PyLyrics.getLyrics(artist, title)
