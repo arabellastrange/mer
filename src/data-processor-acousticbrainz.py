@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.io.json import json_normalize
 import requests
 
 # the song Bohemian Rhapsody by Queen has a MBID of: b1a9c0e9-d987-4042-ae91-78d6a3267d69
@@ -11,14 +12,13 @@ def fetch_song_data(response):
         # This means something went wrong.
         print('GET /api/mbid/high-level/ {}'.format(response.status_code))
 
-    json = response.json()
-    print(json)
-    return json
+    return response.json()
 
 
 def json_to_dataframe(json):
     # json to dataframe
-    dataframe = pd.read_json(json)
+    print(json)
+    dataframe = json_normalize(json)
     print(dataframe)
 
 
