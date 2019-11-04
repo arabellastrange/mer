@@ -13,7 +13,7 @@ pass_hash = pylast.md5("GRV6$VjgfgGKG/j")
 network = pylast.LastFMNetwork(api_key=client_id, api_secret=client_secret,
                                username=username, password_hash=pass_hash)
 
-# fetch a song - iterate over all songs next
+# TODO fetch a song - iterate over all songs next
 artist = 'Arctic Monkeys'
 title = 'Do I Wanna Know'
 track = network.get_track(artist, title)
@@ -21,6 +21,7 @@ tags = track.get_top_tags()
 
 # possibly useful for lyrics and sentiment analysis
 wiki = track.get_wiki_content()
+print("Wiki: " + wiki)
 
 # make dataframe put tags, title, artist
 data = [[artist, title, tags]]
