@@ -62,6 +62,13 @@ mood_columns = ['highlevel.mood_aggressive.all.aggressive', 'highlevel.mood_aggr
                 'highlevel.moods_mirex.version.gaia', 'highlevel.moods_mirex.version.gaia_git_sha',
                 'highlevel.moods_mirex.version.models_essentia_git_sha']
 
+# Path to high level dataset
+PATH = 'I:/Science/CIS/wyb15135/datasets_unmodified/acousticbrainz-highlevel-json-20150130'
+
+
+def read_json_directory():
+    print()
+
 
 def fetch_song_data(response):
     if response.status_code != 200:
