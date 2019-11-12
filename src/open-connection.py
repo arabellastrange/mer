@@ -10,6 +10,7 @@ ssh.connect(COMP, username="wyb15135", password="GlSparkle08#14", allow_agent=Fa
 
 sftp_client = ssh.open_sftp()
 remote_file = sftp_client.open('remote_filename')
+
 try:
     for line in remote_file:
         print()

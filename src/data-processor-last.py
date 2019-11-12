@@ -3,7 +3,6 @@ import pandas as pd
 
 # possibly useful compiled dataset:
 # https://www.researchgate.net/publication/317382609_Music_Mood_Dataset_Creation_Based_on_Last_FM_Tags
-
 PATH = 'I:/Science/CIS/wyb15135/datasets_created/tags-dataset.h5'
 
 client_id = "28f491a22753592dfe63a6a08b11a39a"
@@ -23,11 +22,11 @@ tags = track.get_top_tags()
 
 # possibly useful for lyrics and sentiment analysis
 wiki = track.get_wiki_content()
-print("Wiki: " + wiki)
 
 # make dataframe put tags, title, artist
 data = [[artist, title, tags]]
 dataFrame = pd.DataFrame(data, columns=['artist', 'title', 'tags'])
+print(dataFrame)
 
 # output
-dataFrame.to_hdf(PATH, key='dataFrame', mode='w')
+# dataFrame.to_hdf(PATH, key='dataFrame', mode='w')

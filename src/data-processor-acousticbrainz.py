@@ -1,5 +1,9 @@
 from pandas.io.json import json_normalize
 import requests
+import tensorflow as tf
+import seaborn as sns
+from tensorflow import keras
+from tensorflow.keras import layers
 
 # the song Bohemian Rhapsody by Queen has a MBID of: b1a9c0e9-d987-4042-ae91-78d6a3267d69
 highlvl_response = requests.get("https://acousticbrainz.org/b1a9c0e9-d987-4042-ae91-78d6a3267d69/high-level")
@@ -93,6 +97,32 @@ def drop_mood_information(dataframe):
     return dataframe
 
 
+def build_model(dataframe):
+    model = keras.Sequential([
+        layers.Dense(64, activation='relu', input_shape=[len(dataframe.keys())]),
+        layers.Dense(64, activation='relu'),
+        layers.Dense(1)
+    ])
+
+    optimizer = tf.keras.optimizers.RMSprop(0.001)
+
+    model.compile(loss='mse',
+                  optimizer=optimizer,
+                  metrics=['mae', 'mse'])
+    return model
+
+
+def model_data(dataframe, labels):
+    sns.pairplot(dataframe['highlevel.danceability.value', 'metadata.version.highlevel.essentia_git_sha'],
+                 diag_kind="kde")
+    print(dataframe.describe())
+
+    mood_label = labels.pop('highlevel.moods_mirex.version.gaia')
+    model = build_model()
+
+    example_result = model.predict(dataframe)
+    print(example_result)
+
 def main():
     highlvl_datafrme = json_to_dataframe(fetch_song_data(highlvl_response))
     lowlvl_dataframe = json_to_dataframe(fetch_song_data(lowlvl_response))
@@ -102,6 +132,7 @@ def main():
 
     print("output: ")
     print(highlvl_datafrme)
+    print(highlvl_datafrme.keys())
     print(lowlvl_dataframe)
     print(mood_dataframe)
 
