@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers
+from keras.layers import Dense
 from keras.models import Sequential
 from pandas.io.json import json_normalize
 
@@ -112,9 +112,9 @@ def norm(train_data, train_stats):
 
 def build_model(data):
     model = Sequential([
-        layers.Dense(64, activation='relu', input_shape=[len(data.keys())]),
-        layers.Dense(64, activation='relu'),
-        layers.Dense(1)
+        Dense(64, activation='relu', input_shape=[len(data.keys())]),
+        Dense(64, activation='relu'),
+        Dense(1)
     ])
 
     optimizer = keras.optimizers.RMSprop(0.001)
@@ -161,6 +161,13 @@ def main():
 
     # build and run model
     model_data(train_highlvl_data, norm_train_highlvl_data)
+
+    # train model -- TODO extract to function
+    EPOCHS = 1000
+    history = model.fit(norm_train_highlvl_data, train_mood_labels, epochs=EPOCHS, validation_split=0.2, verbose=0)
+    hist = pd.DataFrame(history.history)
+    hist['epoch'] = history.epoch
+    hist.tail()
 
 
 if __name__ == '__main__':
