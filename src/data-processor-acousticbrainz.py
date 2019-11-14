@@ -1,13 +1,9 @@
-from pandas.io.json import json_normalize
-import requests
-import tensorflow as tf
+import os
+import pandas as pd
 import seaborn as sns
+import tensorflow as tf
+from keras import layers
 from tensorflow import keras
-from tensorflow.keras import layers
-
-# the song Bohemian Rhapsody by Queen has a MBID of: b1a9c0e9-d987-4042-ae91-78d6a3267d69
-highlvl_response = requests.get("https://acousticbrainz.org/b1a9c0e9-d987-4042-ae91-78d6a3267d69/high-level")
-lowlvl_response = requests.get("https://acousticbrainz.org/b1a9c0e9-d987-4042-ae91-78d6a3267d69/low-level")
 
 mood_columns = ['highlevel.mood_aggressive.all.aggressive', 'highlevel.mood_aggressive.all.not_aggressive',
                 'highlevel.mood_aggressive.probability', 'highlevel.mood_aggressive.value',
@@ -71,20 +67,26 @@ PATH = 'I:/Science/CIS/wyb15135/datasets_unmodified/acousticbrainz-highlevel-jso
 
 
 def read_json_directory():
-    print()
+    highlvl_dataframe = pd.DataFrame()
+    files = []
+    i = 0
 
+    # r=root, d=directories, f = files
+    # read the first 1000 files
+    for r, d, f in os.walk(PATH):
+        if i < 1000:
+            for file in f:
+                if '.json' in file:
+                    files.append(os.path.join(r, file))
+                    i = i + 1
+        else:
+            break
 
-def fetch_song_data(response):
-    if response.status_code != 200:
-        # This means something went wrong.
-        print('GET /api/mbid/level/ {}'.format(response.status_code))
+    for f in files:
+        json = pd.read_json(f)
+        highlvl_dataframe.append(json)
 
-    return response.json()
-
-
-def json_to_dataframe(json):
-    dataframe = json_normalize(json)
-    return dataframe
+    return highlvl_dataframe
 
 
 def extract_mood_information(dataframe):
@@ -123,17 +125,15 @@ def model_data(dataframe, labels):
     example_result = model.predict(dataframe)
     print(example_result)
 
-def main():
-    highlvl_datafrme = json_to_dataframe(fetch_song_data(highlvl_response))
-    lowlvl_dataframe = json_to_dataframe(fetch_song_data(lowlvl_response))
 
+def main():
+    highlvl_datafrme = read_json_directory()
     mood_dataframe = extract_mood_information(highlvl_datafrme)
     highlvl_datafrme = drop_mood_information(highlvl_datafrme)
 
     print("output: ")
-    print(highlvl_datafrme)
+    print(highlvl_datafrme.head())
     print(highlvl_datafrme.keys())
-    print(lowlvl_dataframe)
     print(mood_dataframe)
 
 
