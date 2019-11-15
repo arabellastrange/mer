@@ -5,8 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow import keras
-from keras.layers import Dense
-from keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.models import Sequential
 from pandas.io.json import json_normalize
 
 mood_columns = ['highlevel.mood_acoustic.all.acoustic', 'highlevel.mood_acoustic.all.not_acoustic',
@@ -111,6 +111,7 @@ def norm(train_data, train_stats):
 
 
 def build_model(data):
+    # deep learning regression
     model = Sequential([
         Dense(64, activation='relu', input_shape=[len(data.keys())]),
         Dense(64, activation='relu'),
