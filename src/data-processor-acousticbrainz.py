@@ -3,11 +3,16 @@ import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.svm import SVR
+from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.models import Sequential
 from pandas.io.json import json_normalize
+import lastfmtags
+
 
 mood_columns = ['highlevel.mood_acoustic.all.acoustic', 'highlevel.mood_acoustic.all.not_acoustic',
                 'highlevel.mood_acoustic.probability', 'highlevel.mood_acoustic.value',
@@ -69,6 +74,17 @@ def read_json_directory(path):
     return data
 
 
+def fetch_data_labels(data):
+    data_tags = pd.DataFrame()
+    for d in data.iterrows():
+        print("Data: ")
+        print(d)
+        title = d['metadata.tags.title']
+        artist = d['metadata.tags.artist']
+        d.append(lastfmtags.fetch_song_tags(title, artist))
+        data_tags = data_tags.append(d)
+    return data_tags
+
 def split_train_data(data):
     train_data = data.sample(frac=0.8, random_state=0)
     return train_data
@@ -110,7 +126,7 @@ def norm(train_data, train_stats):
     return (train_data - train_stats['mean']) / train_stats['std']
 
 
-def build_model(data):
+def build_deeplearning_model(data):
     # deep learning regression
     model = Sequential([
         Dense(64, activation='relu', input_shape=[len(data.keys())]),
@@ -127,6 +143,13 @@ def build_model(data):
     return model
 
 
+def build_supportvector_model(data): 
+    regressor = SVR(kernel='rbf')
+    # xtrain,xtest,ytrain,ytest=train_test_split(x,y)
+    # regressor.fit(xtrain,ytrain)
+    print(regressor.predict(6.5))
+
+
 def model_data(data, norm_data):
     # investigate data
     sns.pairplot(
@@ -135,18 +158,27 @@ def model_data(data, norm_data):
     plt.show()
     print(data.describe())
 
-    model = build_model(data)
+    model = build_deeplearning_model(data)
     model.summary()
     example_batch = norm_data[:10]
     example_result = model.predict(example_batch)
     print(example_result)
+    return model
 
+
+def train_model(model, data, labels):
+    EPOCHS = 1000
+    history = model.fit(data, labels, epochs=EPOCHS, validation_split=0.2, verbose=0)
+    hist = pd.DataFrame(history.history)
+    hist['epoch'] = history.epoch
+    hist.tail()
+    
 
 def main():
     # read files into pandas DataFrame
     highlvl_data = read_json_directory(
         'I:\Science\CIS\wyb15135\datasets_unmodified\\acousticbrainz-highlevel-json-20150130\highlevel\\0\\00')
-
+ 
     # Split data into training and testing data
     train_highlvl_data = split_train_data(highlvl_data)
     test_highlvl_data = split_test_data(highlvl_data)
@@ -161,14 +193,11 @@ def main():
     test_mood_labels = extract_mood_information(test_highlvl_data)
 
     # build and run model
-    model_data(train_highlvl_data, norm_train_highlvl_data)
+    model = model_data(train_highlvl_data, norm_train_highlvl_data)
 
     # train model -- TODO extract to function
-    EPOCHS = 1000
-    history = model.fit(norm_train_highlvl_data, train_mood_labels, epochs=EPOCHS, validation_split=0.2, verbose=0)
-    hist = pd.DataFrame(history.history)
-    hist['epoch'] = history.epoch
-    hist.tail()
+    train_model(model, norm_train_highlvl_data, train_mood_labels)
+
 
 
 if __name__ == '__main__':
