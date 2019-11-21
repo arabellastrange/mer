@@ -76,7 +76,7 @@ extra_columns = ['highlevel.danceability.probability', 'highlevel.danceability.v
 
 PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth.csv'
 PATH_LABELLED = 'I:\Science\CIS\wyb15135\datasets_created\labelled_data.csv'
-PATH_AUDIO = 'I:\Science\CIS\wyb15135\datasets_unmodified\\acousticbrainz-highlevel-json-20150130\highlevel\\0\\00'
+PATH_AUDIO = 'I:\Science\CIS\wyb15135\datasets_unmodified\\acousticbrainz-highlevel-json-20150130\highlevel'
 
 
 def load_ground_truth():
@@ -87,14 +87,13 @@ def read_json_directory():
     data = pd.DataFrame()
     files = []
     # r=root, d=directories, f = files
-    # read the first 100 files
     for r, d, f in os.walk(PATH_AUDIO):
         print('opened directory')
         for file in f:
             if '.json' in file:
                 files.append(os.path.join(r, file))
-            if len(files) > 10:
-                break
+            # if len(files) > 10:
+            #     break
 
     for f in files:
         print("reading: " + f)
@@ -134,12 +133,8 @@ def format_audio_data(data):
     data['metadata.tags.title'] = data['metadata.tags.title'].apply(lambda x: x.strip("[]'"))
     data['metadata.tags.artist'] = data['metadata.tags.artist'].apply(lambda x: x.strip("[]'"))
 
-    # add a row i know exists in the ground truth set for testing
-    # data.loc[-1] = [3.0, 1.0, 0.62, 0.37, 0.048, 0.010, 0.85, 0.03, 0, 0.05, 0.0069, 0.002, 0.02, 9, 0.0172, 0.03, 0.03,
-    #                 0.01, 0.1, 0.02, 0.041, 0.14, 0.086, 0.38, 0.04, 0.1, 0.061, 0.034, 0.10, 0.051, 0.15, 0.3, 0.04,
-    #                 0.07, 0.06, 0.10, 0.15, 0.044, 0.031, 0, 0.4, 0.034, 0.061, 0.07, 0.03, 0.01, 0, 0.98, 0.99, 1,
-    #                 0.99, 4, 44, 32, 0, 15, -5.39, 4400.0, 'Muse', 0, 'date', 'genre', '0009', 'Agitated']
-    print(data)
+    data = data.reset_index(drop=True)
+
     return data
 
 
@@ -226,8 +221,7 @@ def main():
     print("Labelled data: ")
     print(labelled_data)
 
-    # TODO output labelled_data
-    # labelled_data.to_csv(PATH_LABELLED, encoding='utf-8', index=False)
+    labelled_data.to_csv(PATH_LABELLED, encoding='utf-8')
 
     # Split data into training and testing data
     # train_data = split_train_data(labelled_data)
