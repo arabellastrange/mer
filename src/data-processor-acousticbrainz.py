@@ -130,9 +130,9 @@ def format_audio_data(data):
     # one entry per song - handling lists as strings so that dataframe can be hashed
     data = data.astype(str).drop_duplicates(['metadata.tags.title', 'metadata.tags.artist'], keep='first')
 
-    # formatting singleton lists into strings
-    data['metadata.tags.title'] = data['metadata.tags.title'].apply(lambda x: x.strip('[]'))
-    data['metadata.tags.artist'] = data['metadata.tags.artist'].apply(lambda x: x.strip('[]'))
+    # formatting singleton lists into strings to match ground truth dataset
+    data['metadata.tags.title'] = data['metadata.tags.title'].apply(lambda x: x.strip("[]'"))
+    data['metadata.tags.artist'] = data['metadata.tags.artist'].apply(lambda x: x.strip("[]'"))
 
     # add a row i know exists in the ground truth set for testing
     # data.loc[-1] = [3.0, 1.0, 0.62, 0.37, 0.048, 0.010, 0.85, 0.03, 0, 0.05, 0.0069, 0.002, 0.02, 9, 0.0172, 0.03, 0.03,
