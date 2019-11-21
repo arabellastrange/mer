@@ -180,7 +180,7 @@ def main():
     print(ground_truth.loc[500, :])
     print(ground_truth)
 
-    ground_truth.to_csv(PATH_TRUTH, encoding='utf-8', index=False)
+    # ground_truth.to_csv(PATH_TRUTH, encoding='utf-8', index=False)
 
 
 if __name__ == '__main__':
