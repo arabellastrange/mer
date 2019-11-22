@@ -38,7 +38,7 @@ def main():
     data = format_tags_as_list(data)
 
     # plot the arousal-valence values of dataset
-    # scatterplot(data['arousal'], data['valence'], 'Arousal', 'Valence', 'Arousal-Valence of Songs', "g", False)
+    scatterplot(data['arousal'], data['valence'], 'Arousal', 'Valence', 'Arousal-Valence of Songs', "g", False)
 
     # plot number of songs for every tag
     data['mood'].apply(pd.Series).stack().value_counts().plot.bar(x='Mood Tag', y='Count')
