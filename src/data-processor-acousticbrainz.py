@@ -1,15 +1,6 @@
 import json
 import os
 import pandas as pd
-# import seaborn as sns
-# import matplotlib.pyplot as plt
-# import numpy as np
-# from sklearn.svm import SVR
-# from sklearn.model_selection import train_test_split
-# import tensorflow as tf
-# from tensorflow import keras
-# from tensorflow.keras.layers import Dense
-# from tensorflow.keras.models import Sequential
 from pandas.io.json import json_normalize
 
 mood_columns = ['highlevel.mood_acoustic.all.acoustic', 'highlevel.mood_acoustic.all.not_acoustic',
@@ -111,17 +102,6 @@ def fetch_audio_data_for_truth(ground_truth, audio_data):
     return labelled
 
 
-# def split_train_data(data):
-#     train_data = data.sample(frac=0.8, random_state=0)
-#     return train_data
-#
-#
-# def split_test_data(data):
-#     train_data = split_train_data(data)
-#     test_data = data.drop(train_data.index)
-#     return test_data
-
-
 def format_audio_data(data):
     data = drop_mood_information(data)
     data = drop_extra_information(data)
@@ -148,69 +128,6 @@ def drop_extra_information(data):
     return data
 
 
-# def calc_feature_standards(data):
-#     train_stats = data.describe()
-#     train_stats = train_stats.transpose()
-#     print('train_stats: ')
-#     print(train_stats)
-#     return train_stats
-
-
-# def norm(train_data, train_stats):
-#     # do not need to normalize string data
-#     train_data = train_data.select_dtypes(exclude=['object'])
-#     return (train_data - train_stats['mean']) / train_stats['std']
-
-
-# def build_deeplearning_model(data):
-#     # deep learning regression
-#     model = Sequential([
-#         Dense(64, activation='relu', input_shape=[len(data.keys())]),
-#         Dense(64, activation='relu'),
-#         Dense(1)
-#     ])
-#
-#     optimizer = keras.optimizers.RMSprop(0.001)
-#
-#     model.compile(loss='mse',
-#                   optimizer=optimizer,
-#                   metrics=['mae', 'mse'])
-#
-#     return model
-#
-#
-# def build_supportvector_model(data):
-#     regressor = SVR(kernel='rbf')
-#     # xtrain,xtest,ytrain,ytest=train_test_split(x,y)
-#     # regressor.fit(xtrain,ytrain)
-#     print(regressor.predict(6.5))
-#     return regressor
-
-
-# def model_data(data, norm_data):
-#     # investigate data
-#     sns.pairplot(
-#         data[['highlevel.danceability.value', 'highlevel.gender.all.female', 'highlevel.gender.all.male']],
-#         diag_kind="kde")
-#     plt.show()
-#     print(data.describe())
-#
-#     model = build_deeplearning_model(data)
-#     model.summary()
-#     example_batch = norm_data[:10]
-#     example_result = model.predict(example_batch)
-#     print(example_result)
-#     return model
-#
-#
-# def train_model(model, data, labels):
-#     EPOCHS = 1000
-#     history = model.fit(data, labels, epochs=EPOCHS, validation_split=0.2, verbose=0)
-#     hist = pd.DataFrame(history.history)
-#     hist['epoch'] = history.epoch
-#     hist.tail()
-
-
 def main():
     # read files into pandas DataFrame
     ground_truth = load_ground_truth()
@@ -222,25 +139,6 @@ def main():
     print(labelled_data)
 
     labelled_data.to_csv(PATH_LABELLED, encoding='utf-8')
-
-    # Split data into training and testing data
-    # train_data = split_train_data(labelled_data)
-    # test_data = split_test_data(labelled_data)
-
-    # normalize data
-    # train_stats = calc_feature_standards(train_data)
-    # norm_train_data = norm(train_data, train_stats)
-    # norm_test_data = norm(test_data, train_stats)
-
-    # extract labels, in this case mood
-    # train_mood_labels = []
-    # test_mood_labels = []
-
-    # build and run model
-    # model = model_data(train_data, norm_train_data)
-
-    # train model
-    # train_model(model, norm_train_data, train_mood_labels)
 
 
 if __name__ == '__main__':
