@@ -1,7 +1,4 @@
-import json
-import os
 import pandas as pd
-from pandas.io.json import json_normalize
 
 mood_columns = ['highlevel.mood_acoustic.all.acoustic', 'highlevel.mood_acoustic.all.not_acoustic',
                 'highlevel.mood_acoustic.probability', 'highlevel.mood_acoustic.value',
@@ -67,31 +64,14 @@ extra_columns = ['highlevel.danceability.probability', 'highlevel.danceability.v
 
 PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth.csv'
 PATH_LABELLED = 'I:\Science\CIS\wyb15135\datasets_created\labelled_data.csv'
-PATH_AUDIO = 'I:\Science\CIS\wyb15135\datasets_unmodified\\acousticbrainz-highlevel-json-20150130\highlevel'
 
 
 def load_ground_truth():
     return pd.read_csv(PATH_TRUTH)
 
 
-def read_json_directory():
-    data = pd.DataFrame()
-    files = []
-    # r=root, d=directories, f = files
-    for r, d, f in os.walk(PATH_AUDIO):
-        print('opened directory')
-        for file in f:
-            if '.json' in file:
-                files.append(os.path.join(r, file))
-            # if len(files) > 10:
-            #     break
-
-    for f in files:
-        print("reading: " + f)
-        with open(f) as json_file:
-            j = json_normalize(json.load(json_file))
-            data = data.append(j, sort=True)
-
+def read_from_database():
+    data = pd.read_sql_table('')
     return data
 
 
@@ -131,7 +111,7 @@ def drop_extra_information(data):
 def main():
     # read files into pandas DataFrame
     ground_truth = load_ground_truth()
-    highlvl_data = read_json_directory()
+    highlvl_data = read_from_database()
     audio_data = format_audio_data(highlvl_data)
 
     labelled_data = fetch_audio_data_for_truth(ground_truth, audio_data)
