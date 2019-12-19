@@ -118,7 +118,7 @@ def main():
     print("Labelled data: ")
     print(labelled_data)
 
-    labelled_data.to_csv(PATH_LABELLED, encoding='utf-8')
+    labelled_data.to_csv(PATH_LABELLED)
 
 
 if __name__ == '__main__':
