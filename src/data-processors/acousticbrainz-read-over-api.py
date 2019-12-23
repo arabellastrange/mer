@@ -29,7 +29,7 @@ def main():
     highlvl_dataframe = pd.DataFrame()
     lowlvl_dataframe = pd.DataFrame()
 
-    data = pd.read_csv(PATH_ID)
+    data = pd.read_csv(PATH_ID, encoding='latin1')
 
     # drop unidentified entries
     index_names = data[data['id'] == '0-0'].index
@@ -45,8 +45,8 @@ def main():
     print("output: ")
     print(highlvl_dataframe.head())
 
-    highlvl_dataframe.to_csv(PATH_HIGH)
-    lowlvl_dataframe.to_csv(PATH_LOW)
+    highlvl_dataframe.to_csv(PATH_HIGH, encoding='latin1')
+    lowlvl_dataframe.to_csv(PATH_LOW, encoding='latin1')
 
 
 if __name__ == '__main__':
