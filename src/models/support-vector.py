@@ -1,50 +1,61 @@
 import pandas as pd
 from sklearn.svm import SVR
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
+import matplotlib.pyplot as plt
 
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth.csv'
-PATH_LABELLED = 'I:\Science\CIS\wyb15135\datasets_created\labelled_data.csv'
-
-
-def load_labelled_data():
-    return pd.read_csv(PATH_LABELLED)
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_high.csv'
 
 
-def load_ground_truth():
-    return pd.read_csv(PATH_TRUTH)
+def load_file(path):
+    return pd.read_csv(path)
 
 
 def main():
     # predict valence from arousal in ground truth - example regessor
-    data = load_ground_truth()
-    data = data.drop(columns='mood')
+    data = load_file(PATH_TRUTH)
 
-    s = data.drop(columns='valence')
-    target = data['valence']
+    data = data.drop(
+        columns=['mood', 'metadata.tags.musicbrainz_recordingid', 'artist', 'title', 'id', 'metadata.tags.genre',
+                 'metadata.tags.artist credit', 'metadata.audio_properties.sample_rate', 'metadata.tags.bpm'])
+
+    Y = data[['valence', 'arousal']]
+    X = data.drop(columns=['valence', 'arousal'])
 
     # encode string labels as ints
-    encoder = LabelEncoder()
-    s['artist'] = encoder.fit_transform(s['artist'])
-    s['title'] = encoder.fit_transform(s['title'])
+    title_encoder = LabelEncoder()
+    artist_encoder = LabelEncoder()
+    X['metadata.tags.artist'] = artist_encoder.fit_transform(X['metadata.tags.artist'].astype(str))
+    X['metadata.tags.title'] = title_encoder.fit_transform(X['metadata.tags.title'].astype(str))
 
     # split data set into train and test sets
-    data_train, data_test, target_train, target_test = train_test_split(s, target, test_size=0.30, random_state=10)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.30, random_state=10)
+
+    sc_X = StandardScaler()
+    sc_Y = StandardScaler()
+
+    X = sc_X.fit_transform(x_train)
+    Y= sc_Y.fit_transform(y_train)
 
     # model
     regressor = SVR(kernel='rbf')
+    regressor.fit(X, Y)
 
     # predict
-    prediction = regressor.fit(data_train, target_train).predict(data_test)
+    prediction = regressor.predict(x_test)
 
     print("Accuracy: ")
-    print(r2_score(target_test.values.reshape(-1, 1), prediction))
+    print(r2_score(y_test.values.reshape(-1, 1), prediction))
 
     # output prediction to file
-    # TODO
+
     # visualise data
-    # TODO
+    plt.scatter(x_train, y_train, color='magenta')
+    plt.plot(x_test, regressor.predict(x_test), color='green')
+    plt.title('Predicted Arousal Valence (Support Vector Regression Model)')
+    plt.ylabel('Arousal - Valence')
+    plt.show()
 
 
 if __name__ == '__main__':

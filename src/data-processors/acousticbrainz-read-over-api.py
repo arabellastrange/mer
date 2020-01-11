@@ -1,5 +1,6 @@
 import requests
 import pandas as pd
+import pickle
 from pandas.io.json import json_normalize
 
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\id_data.csv'
@@ -21,8 +22,7 @@ def fetch_song_data(response):
 
 
 def json_to_dataframe(json):
-    dataframe = json_normalize(json)
-    return dataframe
+    return json_normalize(json)
 
 
 def main():
@@ -37,16 +37,23 @@ def main():
 
     for i, row in data.iterrows():
         high_url = "https://acousticbrainz.org/" + row['id'] + "/high-level"
-        print(high_url)
         low_url = "https://acousticbrainz.org/" + row['id'] + "/low-level"
-        highlvl_dataframe.append(json_to_dataframe(request_song_data(high_url)), sort=True)
-        lowlvl_dataframe.append(json_to_dataframe(request_song_data(low_url)), sort=True)
+        print(high_url)
+
+        highlvl_dataframe = highlvl_dataframe.append(json_to_dataframe(request_song_data(high_url)), sort=True)
+        lowlvl_dataframe = lowlvl_dataframe.append(json_to_dataframe(request_song_data(low_url)), sort=True)
 
     print("output: ")
     print(highlvl_dataframe.head())
 
-    highlvl_dataframe.to_csv(PATH_HIGH, encoding='latin1')
-    lowlvl_dataframe.to_csv(PATH_LOW, encoding='latin1')
+    # serialize and write object to file in case csv write fails
+    with open('high_lvl.pkl', 'wb') as output:
+        pickle.dump(highlvl_dataframe, output, pickle.HIGHEST_PROTOCOL)
+    with open('low_lvl.pkl', 'wb') as output:
+        pickle.dump(lowlvl_dataframe, output, pickle.HIGHEST_PROTOCOL)
+
+    highlvl_dataframe.to_csv(PATH_HIGH)
+    lowlvl_dataframe.to_csv(PATH_LOW)
 
 
 if __name__ == '__main__':
