@@ -1,14 +1,23 @@
 import pandas as pd
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+import seaborn as sns
 
-PATH_LABELLED = 'I:\Science\CIS\wyb15135\datasets_created\labelled_data.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
 
 
-def load_labelled_data():
-    return pd.read_csv(PATH_LABELLED)
+def load_file(path):
+    return pd.read_csv(path)
 
 
 def main():
-    data = load_labelled_data()
+    data = load_file(PATH_TRUTH)
+
+    train_dataset = data.sample(frac=0.8, random_state=0)
+    test_dataset = data.drop(train_dataset.index)
+    sns.pairplot(train_dataset[["valence", "arousal", "Displacement", "Weight"]], diag_kind="kde")
+
     print(data)
 
 

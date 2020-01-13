@@ -3,9 +3,9 @@ import pandas as pd
 import pickle
 from pandas.io.json import json_normalize
 
-PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\id_data.csv'
-PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio.csv'
-PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio.csv'
+PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\id_data_reset.csv'
+PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_reset.csv'
+PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_reset.csv'
 
 
 def request_song_data(url):

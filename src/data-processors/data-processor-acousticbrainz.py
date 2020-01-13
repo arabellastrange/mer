@@ -149,38 +149,25 @@ drop_cols = ['highlevel.danceability.version.essentia', 'highlevel.danceability.
              'metadata.tags.musicbrainz original album id', 'metadata.tags.musicbrainz release track id',
              'metadata.tags.musicbrainz trm id', 'metadata.tags.musicbrainz_albumstatus',
              'metadata.tags.musicbrainz_albumtype', 'metadata.tags.musicbrainz_discid',
-             'metadata.tags.musicbrainz_originalalbumid',
              'metadata.tags.musicbrainz_sortname', 'metadata.tags.musicbrainz_trmid',
              'metadata.tags.musicbrainz_workid', 'metadata.tags.musicmagic data',
-             'metadata.tags.musicmagic fingerprint', 'metadata.tags.original album', 'metadata.tags.originalalbum',
+             'metadata.tags.musicmagic fingerprint', 'metadata.tags.originalalbum',
              'metadata.tags.originalartist', 'metadata.tags.originalyear', 'metadata.tags.performer',
-             'metadata.tags.performer:background vocals', 'metadata.tags.performer:bass',
-             'metadata.tags.performer:bass guitar', 'metadata.tags.performer:brass', 'metadata.tags.performer:drums',
-             'metadata.tags.performer:drumset', 'metadata.tags.performer:electric bass guitar',
-             'metadata.tags.performer:electric guitar', 'metadata.tags.performer:guest background vocal',
-             'metadata.tags.performer:guest background vocals', 'metadata.tags.performer:guitar',
-             'metadata.tags.performer:guitars', 'metadata.tags.performer:guitars and synthesizer',
-             'metadata.tags.performer:keyboard', 'metadata.tags.performer:lead vocal',
-             'metadata.tags.performer:lead vocals', 'metadata.tags.performer:organ and piano',
-             'metadata.tags.performer:percussion', 'metadata.tags.performer:vocal',
-             'metadata.tags.performer:vocals',
              'metadata.tags.producer', 'metadata.tags.publisher',
-             'metadata.tags.quodlibet::labelid', 'metadata.tags.radiostation',
-             'metadata.tags.rating', 'metadata.tags.release type',
+             'metadata.tags.quodlibet::labelid', 'metadata.tags.rating', 'metadata.tags.release type',
              'metadata.tags.releasedate', 'metadata.tags.remixer',
              'metadata.tags.replaygain_reference_loudness', 'metadata.tags.rip date',
-             'metadata.tags.ripping tool',
-             'metadata.tags.source', 'metadata.tags.tagging time', 'metadata.tags.taggingdate',
-             'metadata.tags.the cavalera conspiracy', 'metadata.tags.titlesort', 'metadata.tags.tool name',
-             'metadata.tags.tool version', 'metadata.tags.track', 'metadata.tags.trackc',
+             'metadata.tags.ripping tool', 'metadata.tags.source', 'metadata.tags.tagging time',
+             'metadata.tags.taggingdate', 'metadata.tags.the cavalera conspiracy', 'metadata.tags.titlesort',
+             'metadata.tags.tool name', 'metadata.tags.tool version', 'metadata.tags.track', 'metadata.tags.trackc',
              'metadata.tags.url', 'metadata.tags.url:discogs_release', 'metadata.tags.website',
              'metadata.tags.work', 'metadata.tags.writer', 'metadata.tags.year', 'metadata.tags.artist credit',
-             'metadata.tags.genre', 'metadata.audio_properties.sample_rate']
+             'metadata.tags.genre', 'metadata.audio_properties.sample_rate', 'metadata.tags.bpm']
 
 PATH_DATA = 'I:\Science\CIS\wyb15135\datasets_created\id_data_reset.csv'
-PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio.csv'
-PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio.csv'
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_high.csv'
+PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_reset.csv'
+PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_reset.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_high_reset.csv'
 
 
 def load_file(path):
@@ -188,15 +175,20 @@ def load_file(path):
 
 
 def fetch_audio_data_for_truth(ground_truth, audio_data):
-    labelled = pd.merge(ground_truth.astype(str), audio_data.astype(str), left_on=['id'],
+    data = format_audio_data(audio_data)
+    labelled = pd.merge(ground_truth.astype(str), data.astype(str), left_on=['id'],
                         right_on=['metadata.tags.musicbrainz_recordingid'])
     return labelled
 
 
 def format_audio_data(data):
+    data = data.drop_duplicates()
     data = drop_mood_information(data)
     data = drop_extra_information(data)
     data = data.drop(columns=drop_cols)
+
+    performer_cols = [c for c in data.columns if 'metadata.tags.performer:' in c]
+    data = data.drop(columns=performer_cols)
 
     data['metadata.tags.musicbrainz_recordingid'] = data['metadata.tags.musicbrainz_recordingid'].astype(str).apply(
         lambda x: x.strip("[]'"))
@@ -204,9 +196,7 @@ def format_audio_data(data):
         lambda x: x.strip("[]'"))
     data['metadata.tags.title'] = data['metadata.tags.title'].astype(str).apply(
         lambda x: x.strip("[]'"))
-    data['metadata.tags.genre'] = data['metadata.tags.genre'].astype(str).apply(
-        lambda x: x.strip("[]'"))
-    data['metadata.tags.bpm'] = data['metadata.tags.bpm'].astype(str).apply(
+    data['metadata.tags.album'] = data['metadata.tags.title'].astype(str).apply(
         lambda x: x.strip("[]'"))
 
     data = data.reset_index(drop=True)
@@ -226,21 +216,21 @@ def drop_extra_information(data):
 
 def main():
     # input
-    id_data = load_file(PATH_DATA)
-    id_data = id_data.drop_duplicates()
-    id_data.to_csv(PATH_DATA, index=False)
-
+    # id_data = load_file(PATH_DATA)
+    # id_data = id_data.drop_duplicates()
+    #
     # highlvl_data = load_file(PATH_HIGH)
     # lowlvl_data = load_file(PATH_LOW)
-    #
+
     # ground_truth = fetch_audio_data_for_truth(id_data, highlvl_data)
     # print("Ground truth: ")
     # print(ground_truth.head())
-    # ground_truth = pd.read_csv(PATH_TRUTH)
-    # for i, row in ground_truth.iterrows():
-    #     if row['artist'] != row['metadata.tags.artist']:
-    #         if row['title'] != row['metadata.tags.title']:
-    #             print(row)
+
+    ground_truth = pd.read_csv(PATH_TRUTH)
+    for i, row in ground_truth.iterrows():
+        if row['artist'] != row['metadata.tags.artist']:
+            if row['title'] != row['metadata.tags.title']:
+                print(row)
     # output
     # ground_truth.to_csv(PATH_TRUTH, index=False)
 

@@ -4,8 +4,9 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
+import numpy as np
 
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_high.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
 
 
 def load_file(path):
@@ -17,44 +18,61 @@ def main():
     data = load_file(PATH_TRUTH)
 
     data = data.drop(
-        columns=['mood', 'metadata.tags.musicbrainz_recordingid', 'artist', 'title', 'id', 'metadata.tags.genre',
-                 'metadata.tags.artist credit', 'metadata.audio_properties.sample_rate', 'metadata.tags.bpm'])
+        columns=['mood', 'metadata.tags.musicbrainz_recordingid', 'metadata.tags.artist', 'title', 'id',
+                 'metadata.tags.title', 'metadata.tags.album'])
 
-    Y = data[['valence', 'arousal']]
+    Y_valence = data['valence']
+    print(Y_valence.head())
+    Y_arousal = data['arousal']
     X = data.drop(columns=['valence', 'arousal'])
+    print(X.head())
 
     # encode string labels as ints
-    title_encoder = LabelEncoder()
     artist_encoder = LabelEncoder()
-    X['metadata.tags.artist'] = artist_encoder.fit_transform(X['metadata.tags.artist'].astype(str))
-    X['metadata.tags.title'] = title_encoder.fit_transform(X['metadata.tags.title'].astype(str))
+    X['artist'] = artist_encoder.fit_transform(X['artist'].astype(str))
 
     # split data set into train and test sets
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.30, random_state=10)
+    x_train_v, x_test_v, y_train_v, y_test_v = train_test_split(X, Y_valence, test_size=0.33, random_state=19)
+    x_train_a, x_test_a, y_train_a, y_test_a = train_test_split(X, Y_arousal, test_size=0.33, random_state=19)
 
-    sc_X = StandardScaler()
-    sc_Y = StandardScaler()
+    sc_XV = StandardScaler()
+    sc_XA = StandardScaler()
+    sc_YV = StandardScaler()
+    sc_YA = StandardScaler()
 
-    X = sc_X.fit_transform(x_train)
-    Y= sc_Y.fit_transform(y_train)
+    X_valence = sc_XV.fit_transform(x_train_v)
+    X_arousal = sc_XA.fit_transform(x_train_a)
+    Y_valence = np.array(y_train_v).reshape(-1,1)
+    Y_arousal = np.array(y_train_a).reshape(-1,1)
+
+    Y_valence = sc_YV.fit_transform(Y_valence)
+    Y_arousal = sc_YA.fit_transform(Y_arousal)
 
     # model
-    regressor = SVR(kernel='rbf')
-    regressor.fit(X, Y)
+    regressor_v = SVR(kernel='rbf')
+    regressor_v.fit(X_valence, Y_valence)
+
+    regressor_a = SVR(kernel='rbf')
+    regressor_a.fit(X_arousal, Y_arousal)
 
     # predict
-    prediction = regressor.predict(x_test)
+    prediction_v = regressor_v.predict(x_test_v)
+    prediction_a = regressor_a.predict(x_test_a)
 
-    print("Accuracy: ")
-    print(r2_score(y_test.values.reshape(-1, 1), prediction))
+    print("Accuracy Valence: ")
+    print(r2_score(y_test_v.values.reshape(-1, 1), prediction_v))
+
+    print("Accuracy Arousal: ")
+    print(r2_score(y_test_a.values.reshape(-1, 1), prediction_a))
 
     # output prediction to file
 
     # visualise data
-    plt.scatter(x_train, y_train, color='magenta')
-    plt.plot(x_test, regressor.predict(x_test), color='green')
-    plt.title('Predicted Arousal Valence (Support Vector Regression Model)')
-    plt.ylabel('Arousal - Valence')
+    plt.scatter(x_train_v['highlevel.danceability.all.danceable'], y_train_v, color='magenta')
+    plt.plot(x_test_v['highlevel.danceability.all.danceable'], regressor_v.predict(x_test_v), color='green')
+    plt.title('Predicted Valence (Support Vector Regression Model)')
+    plt.ylabel('Valence')
+    plt.xlabel('Danceability')
     plt.show()
 
 
