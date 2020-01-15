@@ -3,6 +3,8 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_docs as tfdocs
+import tensorflow_docs.plots
+import tensorflow_docs.modeling
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
@@ -55,8 +57,8 @@ def main():
 
     # Stats
     train_stats = train_dataset.describe()
-    train_stats = train_stats.pop("valence")
-    train_stats = train_stats.pop("arousal")
+    train_stats.pop("valence")
+    train_stats.pop("arousal")
     train_stats = train_stats.transpose()
     print(train_stats)
 
@@ -67,11 +69,11 @@ def main():
     test_labels_a = test_dataset.pop('arousal')
 
     # Normalise
-    normed_train_data = norm(train_dataset)
-    normed_test_data = norm(test_dataset)
+    normed_train_data = norm(train_dataset, train_stats)
+    normed_test_data = norm(test_dataset, train_stats)
 
     # Build model
-    model = build_model()
+    model = build_model(train_dataset)
     model.summary()
 
     # Train
@@ -81,11 +83,46 @@ def main():
         epochs=EPOCHS, validation_split=0.2, verbose=0,
         callbacks=[tfdocs.modeling.EpochDots()])
 
+    
+    # History 
+    hist = pd.DataFrame(history.history)
+    hist['epoch'] = history.epoch
+    print(hist.tail())
+    
+    plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
+    plotter.plot({'Basic': history}, metric = "mean_absolute_error")
+    plt.ylim([0, 10])
+    plt.ylabel('MAE [Valence]')
+    plt.show()
+    
+    plotter.plot({'Basic': history}, metric = "mean_squared_error")
+    plt.ylim([0, 20])
+    plt.ylabel('MSE [Valence^2]')
+    plt.show()
+    
     # Predict
-    example_batch = normed_train_data[:10]
-    example_result = model.predict(example_batch)
-    print(example_result)
+    loss, mae, mse = model.evaluate(normed_test_data, test_labels_v, verbose=2)
+    print("Testing set Mean Abs Error: {:5.2f} Valence".format(mae))
+    
+    test_predictions = model.predict(normed_test_data).flatten()
 
+    a = plt.axes(aspect='equal')
+    plt.scatter(test_labels_v, test_predictions)
+    plt.xlabel('True Values [Valence]')
+    plt.ylabel('Predictions [Valence]')
+    lims = [0, 15]
+    plt.xlim(lims)
+    plt.ylim(lims)
+    _ = plt.plot(lims, lims)
+    
+    plt.show()
+    
+    error = test_predictions - test_labels_v
+    plt.hist(error, bins = 25)
+    plt.xlabel("Prediction Error [MPG]")
+    _ = plt.ylabel("Count")
+    
+    plt.show()
 
 if __name__ == '__main__':
     main()
