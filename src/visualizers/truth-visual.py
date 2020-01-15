@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from ast import literal_eval
 
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
 
 
 def load_ground_truth():
