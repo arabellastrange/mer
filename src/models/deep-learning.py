@@ -1,5 +1,6 @@
 import pandas as pd
 import tensorflow as tf
+from pandas import DataFrame
 from tensorflow import keras
 from tensorflow.keras import layers
 import tensorflow_docs as tfdocs
@@ -10,6 +11,7 @@ from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 
 PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
+PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_DEEP.csv'
 
 
 def load_file(path):
@@ -38,13 +40,16 @@ def build_model(train_dataset):
 def main():
     # Pre-process data
     data = load_file(PATH_TRUTH)
+    data_id = data[['id', 'title', 'artist']]
     data = data.drop(
-        columns=['mood', 'metadata.tags.musicbrainz_recordingid', 'metadata.tags.artist', 'title', 'id',
+        columns=['mood', 'metadata.tags.musicbrainz_recordingid', 'metadata.tags.artist', 'id',
                  'metadata.tags.title', 'metadata.tags.album', 'metadata.audio_properties.length',
                  'metadata.audio_properties.replay_gain', 'metadata.audio_properties.equal_loudness',
                  'metadata.audio_properties.bit_rate', 'metadata.audio_properties.analysis_sample_rate'])
     artist_encoder = LabelEncoder()
     data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
+    title_encoder = LabelEncoder()
+    data['title'] = title_encoder.fit_transform(data['title'].astype(str))
 
     # Select training and testing subsets
     train_dataset = data.sample(frac=0.8, random_state=0)
@@ -73,56 +78,87 @@ def main():
     normed_test_data = norm(test_dataset, train_stats)
 
     # Build model
-    model = build_model(train_dataset)
-    model.summary()
+    model_v = build_model(train_dataset)
+    print(model_v.summary())
+
+    model_a = build_model(train_dataset)
+    print(model_a.summary())
 
     # Train
     EPOCHS = 1000
-    history = model.fit(
+    history_v = model_v.fit(
         normed_train_data, train_labels_v,
         epochs=EPOCHS, validation_split=0.2, verbose=0,
         callbacks=[tfdocs.modeling.EpochDots()])
 
-    
-    # History 
-    hist = pd.DataFrame(history.history)
-    hist['epoch'] = history.epoch
-    print(hist.tail())
-    
+    history_a = model_a.fit(
+        normed_train_data, train_labels_a,
+        epochs=EPOCHS, validation_split=0.2, verbose=0,
+        callbacks=[tfdocs.modeling.EpochDots()])
+
+    # History
+    hist_v = pd.DataFrame(history_v.history)
+    hist_v['epoch'] = history_v.epoch
+    print(hist_v.tail())
+
+    hist_a = pd.DataFrame(history_a.history)
+    hist_a['epoch'] = history_a.epoch
+    print(hist_a.tail())
+
+    # Predict and write to file
+    loss_v, mae_v, mse_v = model_v.evaluate(normed_test_data, test_labels_v, verbose=2)
+    print("Testing set Mean Abs Error: {:5.2f} Valence".format(mae_v))
+
+    test_predictions_v = model_v.predict(normed_test_data).flatten()
+    valence_data = DataFrame(test_predictions_v, columns=['valence'])
+
+    loss_a, mae_a, mse_a = model_a.evaluate(normed_test_data, test_labels_a, verbose=2)
+    print("Testing set Mean Abs Error: {:5.2f} Arousal".format(mae_a))
+    test_predictions_a = model_a.predict(normed_test_data).flatten()
+    arousal_data = DataFrame(test_predictions_a, columns=['arousal'])
+
+    predictions = pd.concat([test_dataset, valence_data, arousal_data], axis=1)
+    predictions['artist'] = artist_encoder.inverse_transform(predictions['artist'])
+    predictions['title'] = title_encoder.inverse_transform(predictions['title'])
+
+    pd.merge(data_id, predictions, on=['title', 'artist'])
+    predictions.to_csv(PATH_PREDICTED_DEEP)
+
+    # Visualize
     plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
-    plotter.plot({'Basic': history}, metric = "mean_absolute_error")
+    plotter.plot({'Basic': history_v}, metric="mean_absolute_error")
     plt.ylim([0, 10])
     plt.ylabel('MAE [Valence]')
     plt.show()
-    
-    plotter.plot({'Basic': history}, metric = "mean_squared_error")
+
+    plotter.plot({'Basic': history_v}, metric="mean_squared_error")
     plt.ylim([0, 20])
     plt.ylabel('MSE [Valence^2]')
     plt.show()
-    
-    # Predict
-    loss, mae, mse = model.evaluate(normed_test_data, test_labels_v, verbose=2)
-    print("Testing set Mean Abs Error: {:5.2f} Valence".format(mae))
-    
-    test_predictions = model.predict(normed_test_data).flatten()
+
+    plotter.plot({'Basic': history_a}, metric="mean_absolute_error")
+    plt.ylim([0, 10])
+    plt.ylabel('MAE [Arousal]')
+    plt.show()
 
     a = plt.axes(aspect='equal')
-    plt.scatter(test_labels_v, test_predictions)
+    plt.scatter(test_labels_v, test_predictions_v)
     plt.xlabel('True Values [Valence]')
     plt.ylabel('Predictions [Valence]')
     lims = [0, 15]
     plt.xlim(lims)
     plt.ylim(lims)
     _ = plt.plot(lims, lims)
-    
+
     plt.show()
-    
-    error = test_predictions - test_labels_v
-    plt.hist(error, bins = 25)
+
+    error = test_predictions_v - test_labels_v
+    plt.hist(error, bins=25)
     plt.xlabel("Prediction Error [MPG]")
     _ = plt.ylabel("Count")
-    
+
     plt.show()
+
 
 if __name__ == '__main__':
     main()
