@@ -116,13 +116,18 @@ def main():
     print("Testing set Mean Abs Error: {:5.2f} Arousal".format(mae_a))
     test_predictions_a = model_a.predict(normed_test_data).flatten()
     arousal_data = DataFrame(test_predictions_a, columns=['arousal'])
-
-    predictions = pd.concat([test_dataset, valence_data, arousal_data], axis=1)
+    
+    print(test_dataset.head())
+    print(valence_data.head())
+    print(arousal_data.head())
+    
+    predictions = test_dataset.join(valence_data.join(arousal_data))
+    print(predictions.head())
     predictions['artist'] = artist_encoder.inverse_transform(predictions['artist'])
     predictions['title'] = title_encoder.inverse_transform(predictions['title'])
 
-    pd.merge(data_id, predictions, on=['title', 'artist'])
-    predictions.to_csv(PATH_PREDICTED_DEEP)
+    predictions = pd.merge(data_id, predictions, on=['title', 'artist'])
+    predictions.to_csv(PATH_PREDICTED_DEEP, index=False)
 
     # Visualize
     plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
@@ -154,7 +159,7 @@ def main():
 
     error = test_predictions_v - test_labels_v
     plt.hist(error, bins=25)
-    plt.xlabel("Prediction Error [MPG]")
+    plt.xlabel("Prediction Error [Valence]")
     _ = plt.ylabel("Count")
 
     plt.show()
