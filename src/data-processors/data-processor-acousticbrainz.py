@@ -164,10 +164,10 @@ drop_cols = ['highlevel.danceability.version.essentia', 'highlevel.danceability.
              'metadata.tags.work', 'metadata.tags.writer', 'metadata.tags.year', 'metadata.tags.artist credit',
              'metadata.tags.genre', 'metadata.audio_properties.sample_rate', 'metadata.tags.bpm']
 
-PATH_DATA = 'I:\Science\CIS\wyb15135\datasets_created\id_data_reset.csv'
 PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_reset.csv'
 PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_reset.csv'
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_high_reset.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
+PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\formatted_high_lvl_ground_truth.csv'
 
 
 def load_file(path):
@@ -216,15 +216,20 @@ def drop_extra_information(data):
 
 def main():
     # input
-    # id_data = load_file(PATH_DATA)
-    # id_data = id_data.drop_duplicates()
-    #
-    # highlvl_data = load_file(PATH_HIGH)
-    # lowlvl_data = load_file(PATH_LOW)
+    data = load_file(PATH_TRUTH)
+    # drop already id'ed songs
+    id_data = load_file(PATH_ID)
 
-    # ground_truth = fetch_audio_data_for_truth(id_data, highlvl_data)
-    # print("Ground truth: ")
-    # print(ground_truth.head())
+    df_all = id_data.merge(data.drop_duplicates(), on=['artist', 'title'],
+                       how='left', indicator=True)
+    df_all['_merge'] == 'left_only'
+
+    highlvl_data = load_file(PATH_HIGH)
+    lowlvl_data = load_file(PATH_LOW)
+
+    ground_truth = fetch_audio_data_for_truth(data, highlvl_data)
+    print("Ground truth: ")
+    print(ground_truth.head())
 
     ground_truth = pd.read_csv(PATH_TRUTH)
     for i, row in ground_truth.iterrows():

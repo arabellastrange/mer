@@ -58,8 +58,10 @@ def main():
     print(data.head())
 
     data.to_csv(PATH_CLUSTERED, index=False)
-
-    print(select_songs(data.loc[data['Cluster'] == 2]))
+    songs = select_songs(data.loc[data['Cluster'] == 1])
+    
+    print(songs['artist'])
+    print(songs['title'])
 
 
 if __name__ == '__main__':
