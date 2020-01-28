@@ -36,7 +36,8 @@ def format_class_data(data):
     # merge with id'd songs
     data = data.drop(columns=['arousal', 'valence'])
     for i, row in data.iterrows():
-        if row['mood'] == ['slow'] or row['mood'] == ['fast'] or row['mood'] == ['chorus'] or row['mood'] == ['opera']:
+        if row['mood'] == ['slow'] or row['mood'] == ['fast'] or row['mood'] == ['chorus'] or row['mood'] == ['opera'] \
+                or row['mood'] == ['orchestra']:
             data = data.drop(i)
         elif 'slow' in row['mood'] and 'fast' in row['mood']:
             # if song is tagged with both slow and fast then drop both tags
@@ -61,7 +62,8 @@ def format_class_data(data):
 
 
 def merge_w_id(d_class, d_id):
-    d_class = d_class.merge(d_id[['artist', 'title', 'id']], on=['artist', 'title'], )
+    d_class = d_class.merge(d_id[['artist', 'title', 'id']], left_on=['artist', 'title'], right_on=['artist', 'title'],
+                            how='left')
     return d_class
 
 
@@ -73,12 +75,12 @@ def main():
 
     # read string rep of lists as lists
     d_truth['mood'] = d_truth['mood'].apply(ast.literal_eval)
-    d_truth = format_class_data(d_truth)
-    # d_class = merge_w_id(d_class, d_id)
+    # d_truth = format_class_data(d_truth)
+    d_class = merge_w_id(d_class, d_id)
 
     # output
-    d_truth.to_csv(PATH_CLASS, index=False)
-    # d_class.to_csv(PATH_CLASS, index=False)
+    # d_truth.to_csv(PATH_CLASS, index=False)
+    d_class.to_csv(PATH_CLASS, index=False)
 
 
 if __name__ == '__main__':
