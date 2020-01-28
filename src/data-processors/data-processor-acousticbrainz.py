@@ -217,12 +217,6 @@ def drop_extra_information(data):
 def main():
     # input
     data = load_file(PATH_TRUTH)
-    # drop already id'ed songs
-    id_data = load_file(PATH_ID)
-
-    df_all = id_data.merge(data.drop_duplicates(), on=['artist', 'title'],
-                       how='left', indicator=True)
-    df_all['_merge'] == 'left_only'
 
     highlvl_data = load_file(PATH_HIGH)
     lowlvl_data = load_file(PATH_LOW)
