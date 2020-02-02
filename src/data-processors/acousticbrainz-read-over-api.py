@@ -3,9 +3,9 @@ import pandas as pd
 import pickle
 from pandas.io.json import json_normalize
 
-PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\id_data_reset.csv'
-PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_reset.csv'
-PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_reset.csv'
+PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification.csv'
+PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_class.csv'
+PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_class.csv'
 
 
 def request_song_data(url):
@@ -29,11 +29,12 @@ def main():
     highlvl_dataframe = pd.DataFrame()
     lowlvl_dataframe = pd.DataFrame()
 
-    data = pd.read_csv(PATH_ID, encoding='latin1')
+    data = pd.read_csv(PATH_ID)
 
     # drop unidentified entries
     index_names = data[data['id'] == '0-0'].index
     data.drop(index_names, inplace=True)
+    print(data.info())
 
     for i, row in data.iterrows():
         high_url = "https://acousticbrainz.org/" + row['id'] + "/high-level"
