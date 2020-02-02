@@ -3,7 +3,6 @@ import musicbrainzngs as musicbrainz
 import difflib as diff
 import requests
 
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification.csv'
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
 
 
@@ -49,17 +48,10 @@ def search_musicbrainz_by_artist(data):
         else:
             for idx, artist in enumerate(artists['artist-list']):
                 if row['artist'].lower() in artist['name'].lower():
-                    # browse all artist recordings, maximum limit 100, default 25
-                    # TODO
-                    # When you want to fetch a list of entities greater than 25, you have to use one of the browse
-                    # functions. Not only can you specify a limit as high as 100, but you can also specify an offset
-                    # to get the complete list in multiple requests.
-
-                    recordings = musicbrainz.browse_recordings(artist=artist['id'], limit=100)
+                    recordings = fetch_all_recordings(artist['id'])
                     match = find_closest_title(recordings, row['title'])
-
                     if match:
-                        for recording in recordings['recording-list']:
+                        for recording in recordings:
                             if match == recording['title']:
                                 print('Query: ')
                                 print(row['artist'] + ' ' + row['title'])
@@ -77,7 +69,7 @@ def search_musicbrainz_by_artist(data):
 
 def find_closest_artist(recordings, target):
     possibilities = []
-    for idx, recording in enumerate(recordings['recording-list']):
+    for recording in recordings:
         possibilities.append(recording['artist-credit-phrase'])
     # returns 'good enough' matches from list, sorted by similarity
     matches = diff.get_close_matches(target, possibilities)
@@ -88,7 +80,7 @@ def find_closest_artist(recordings, target):
 
 def find_closest_title(recordings, target):
     possibilities = []
-    for idx, recording in enumerate(recordings['recording-list']):
+    for recording in recordings:
         possibilities.append(recording['title'])
     # returns 'good enough' matches from list, sorted by similarity
     matches = diff.get_close_matches(target, possibilities)
@@ -99,7 +91,7 @@ def find_closest_title(recordings, target):
 
 def find_closest_title_with_artist(recordings, target, artist):
     possibilities = []
-    for idx, recording in enumerate(recordings['recording-list']):
+    for recording in recordings:
         if artist == recording['artist-credit-phrase']:
             possibilities.append(recording['title'])
     # returns 'good enough' matches from list, sorted by similarity
@@ -111,7 +103,7 @@ def find_closest_title_with_artist(recordings, target, artist):
 
 def find_closest_recording(recordings, target):
     possibilities = []
-    for idx, recording in enumerate(recordings['recording-list']):
+    for recording in recordings:
         possibilities.append(recording['title'] + ' ' + recording['artist-credit-phrase'])
     # returns 'good enough' matches from list, sorted by similarity
     matches = diff.get_close_matches(target, possibilities)
@@ -120,35 +112,28 @@ def find_closest_recording(recordings, target):
         return matches[0]
 
 
-def fetch_all_recordings(artist):
+def fetch_all_recordings(artist_id):
+    # When you want to fetch a list of entities greater than 25, you have to use one of the browse
+    # functions. Not only can you specify a limit as high as 100, but you can also specify an offset
+    # to get the complete list in multiple requests.
     offset = 0
-    limit=100
+    limit = 100
     recordings = []
     page = 1
-    # print("fetching page number %d.." % page)
-    # result = musicbrainz.browse_recordings(artist=artist, limit=limit)
-    # page_releases = result['recording-list']
-    # recordings += page_releases
-    #
-    # # release-count is only available starting with musicbrainzngs 0.5
-    # if "release-count" in result:
-    #     count = result['release-count']
-    #     print("")
-    # while len(page_releases) >= limit:
-    #     offset += limit
-    #     page += 1
-    #     print("fetching page number %d.." % page)
-    #     result = musicbrainz.browse_releases(artist=artist, limit=limit, offset=offset)
-    #     page_releases = result['release-list']
-    #     releases += page_releases
-    # print("")
-    # for release in releases:
-    #     for label_info in release['label-info-list']:
-    #         catnum = label_info.get('catalog-number')
-    #         if label_info['label']['id'] == label and catnum:
-    #             print("{catnum:>17}: {date:10} {title}".format(catnum=catnum,
-    #                                                            date=release['date'], title=release['title']))
-    # print("\n%d releases on  %d pages" % (len(releases), page))
+    result = musicbrainz.browse_recordings(artist=artist_id, limit=limit)
+    page_recs = result['recording-list']
+    recordings += page_recs
+
+    if "release-count" in result:
+        count = result['release-count']
+    while len(page_recs) >= limit:
+        offset += limit
+        page += 1
+        result = musicbrainz.browse_recordings(artist=artist_id, limit=limit, offset=offset)
+        page_recs = result['recording-list']
+        recordings += page_recs
+
+    return recordings
 
 
 def has_audio_data(id):
@@ -162,8 +147,7 @@ def has_audio_data(id):
 
 
 def main():
-    data = load_file(PATH_TRUTH)
-    data['fallback-id'] = '0-0'
+    data = load_file(PATH_ID)
 
     # only fetch songs that dont already have an id
     data_id = data[data['id'].isnull()]

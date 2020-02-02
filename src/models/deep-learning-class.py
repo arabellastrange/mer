@@ -7,10 +7,6 @@ from sklearn.model_selection import train_test_split
 
 PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
 PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_deep_class.csv'
-
-# dont like: 'abundant', 'active', 'aged', 'ancient',  'annoyed', 'area', 'arena', 'below', 'broad', 'buried',
-# 'circling', 'cloudy', 'coma', 'old', 'opera', 'savory', 'solid'
-# change chrus and orchestra back to choral etc
 label_cols = ['abrupt', 'abundant', 'active', 'aged', 'airy', 'ambient', 'ancient', 'angry', 'annoyed', 'area', 'arena',
               'astonishing', 'awful', 'awkward', 'below', 'bitter', 'bizarre', 'black', 'breezy', 'bright', 'broad',
               'buoyant', 'buried', 'calm', 'cheerful', 'cheery', 'chorus', 'circling', 'cloudy', 'coma', 'comfortable',
