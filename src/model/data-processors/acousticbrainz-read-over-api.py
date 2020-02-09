@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 from pandas.io.json import json_normalize
 
-PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification.csv'
+PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
 PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_class.csv'
 PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_class.csv'
 
@@ -32,7 +32,7 @@ def main():
     data = pd.read_csv(PATH_ID)
 
     # drop unidentified entries
-    index_names = data[data['id'] == '0-0'].index
+    index_names = data[data['id'].isnull()].index
     data.drop(index_names, inplace=True)
     print(data.info())
 

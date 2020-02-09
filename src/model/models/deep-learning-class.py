@@ -39,6 +39,25 @@ def df_to_dataset(data, shuffle=True, batch_size=32):
     return ds
 
 
+def create_model(feature_layer, train, val):
+    model = tf.keras.Sequential([
+        feature_layer,
+        layers.Dense(128, activation='relu'),
+        layers.Dense(128, activation='relu'),
+        layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    model.fit(train,
+              validation_data=val,
+              epochs=5)
+
+    return model
+
+
 def main():
     data = load_file(PATH_TRUTH)
     data_id = data[['id', 'title', 'artist']]
@@ -65,6 +84,16 @@ def main():
     train_ds = df_to_dataset(train, batch_size=batch_size)
     val_ds = df_to_dataset(val, shuffle=False, batch_size=batch_size)
     test_ds = df_to_dataset(test, shuffle=False, batch_size=batch_size)
+
+    # get feature cols
+    feature_columns = []
+    rest_cols = data[data.columns.difference(label_cols)].columns.values()
+    for header in [rest_cols]:
+        feature_columns.append(feature_column.numeric_column(header))
+
+    feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
+
+    model = create_model()
 
 
 if __name__ == '__main__':

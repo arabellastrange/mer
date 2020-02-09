@@ -135,9 +135,9 @@ drop_cols = ['highlevel.danceability.version.essentia', 'highlevel.danceability.
              'metadata.tags.arranger', 'metadata.tags.artistwebpage', 'metadata.tags.composer',
              'metadata.tags.composersort', 'metadata.tags.conductor', 'metadata.tags.content group',
              'metadata.tags.contentgroup', 'metadata.tags.copyright', 'metadata.tags.copyrighturl',
-             'metadata.tags.country', 'metadata.tags.date', 'metadata.tags.description',
-             'metadata.tags.discc', 'metadata.tags.discid', 'metadata.tags.djmixer',
-             'metadata.tags.encodersettings', 'metadata.tags.encoding', 'metadata.tags.encodingtime',
+             'metadata.tags.country', 'metadata.tags.date',
+             'metadata.tags.discc', 'metadata.tags.discid', 'metadata.tags.djmixer', 'metadata.tags.encoding',
+             'metadata.tags.encodingtime',
              'metadata.tags.engineer', 'metadata.tags.filetype',
              'metadata.tags.filewebpage', 'metadata.tags.fingerprint', 'metadata.tags.fmps_playcount',
              'metadata.tags.fmps_rating_amarok_score', 'metadata.tags.format', 'metadata.tags.grouping',
@@ -164,10 +164,10 @@ drop_cols = ['highlevel.danceability.version.essentia', 'highlevel.danceability.
              'metadata.tags.work', 'metadata.tags.writer', 'metadata.tags.year', 'metadata.tags.artist credit',
              'metadata.tags.genre', 'metadata.audio_properties.sample_rate', 'metadata.tags.bpm']
 
-PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_reset.csv'
-PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_reset.csv'
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
-PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\formatted_high_lvl_ground_truth.csv'
+PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_class.csv'
+PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_class.csv'
+PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 
 
 def load_file(path):
@@ -216,8 +216,7 @@ def drop_extra_information(data):
 
 def main():
     # input
-    data = load_file(PATH_TRUTH)
-
+    data = load_file(PATH_ID)
     highlvl_data = load_file(PATH_HIGH)
     lowlvl_data = load_file(PATH_LOW)
 
@@ -225,13 +224,14 @@ def main():
     print("Ground truth: ")
     print(ground_truth.head())
 
-    ground_truth = pd.read_csv(PATH_TRUTH)
-    for i, row in ground_truth.iterrows():
-        if row['artist'] != row['metadata.tags.artist']:
-            if row['title'] != row['metadata.tags.title']:
-                print(row)
+    # ground_truth = pd.read_csv(PATH_TRUTH)
+    # for i, row in ground_truth.iterrows():
+    #    if row['artist'] != row['metadata.tags.artist']:
+    #        if row['title'] != row['metadata.tags.title']:
+    #            print(row)
+
     # output
-    # ground_truth.to_csv(PATH_TRUTH, index=False)
+    ground_truth.to_csv(PATH_TRUTH, index=False)
 
 
 if __name__ == '__main__':
