@@ -1,8 +1,9 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from ast import literal_eval
+import numpy as np 
 
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
 
 
 def load_ground_truth():
@@ -38,12 +39,15 @@ def main():
     data = format_tags_as_list(data)
 
     # plot the arousal-valence values of dataset
-    scatterplot(data['arousal'], data['valence'], 'Arousal', 'Valence', 'Arousal-Valence of Songs', "g", False)
+    # scatterplot(data['arousal'], data['valence'], 'Arousal', 'Valence', 'Arousal-Valence of Songs', "g", False)
 
     # plot number of songs for every tag
-    data['mood'].apply(pd.Series).stack().value_counts().plot.bar(x='Mood Tag', y='Count')
+    mood_info = data['mood'].apply(pd.Series).stack().value_counts()
+    # drop tags with one hundred occurences 
+    mood_info = mood_info[mood_info > 100]
+    mood_info.plot.bar(x='Mood Tag', y='Count')
     plt.show()
-
+    
 
 if __name__ == '__main__':
     main()

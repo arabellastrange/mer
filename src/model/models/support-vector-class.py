@@ -7,7 +7,7 @@ from matplotlib.colors import ListedColormap
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MultiLabelBinarizer
-from sklearn.metrics import confusion_matrix, f1_score
+from sklearn.metrics import confusion_matrix, f1_score, multilabel_confusion_matrix, classification_report
 from sklearn.svm import SVC
 
 PATH_MOOD = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
@@ -115,14 +115,20 @@ def main():
     # predict, make Confusion Matrix and score
     mlb.inverse_transform(classifier.predict(x_test))
     y_pred = get_best_tags(classifier, x_test, mlb)
-    print(y_pred)
+    print(y_pred[:5])
 
-    c_matrix = confusion_matrix(y_test.argmax(axis=1), classifier.predict(x_test).argmax(axis=1))
-    print(c_matrix)
+    y_pred_frame = pd.DataFrame(mlb.transform(y_pred), columns=mlb.classes_)
 
-    score = f1_score(y_test, classifier.predict(x_test))
+    # flatten dataframes to array
+    c_matrix = multilabel_confusion_matrix(y_test.values, y_pred_frame.values)
+    # print(c_matrix)
+
+    score = f1_score(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1), average='micro')
     print('Score: ')
     print(score)
+
+    report = classification_report(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1))
+    print(report)
 
     # predictions = classifier.predict(x_test).flatten()
     # predictions_frame = DataFrame(predictions, columns='mood')

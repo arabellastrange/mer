@@ -4,18 +4,25 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow import feature_column
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
+import tensorflow_docs as tfdocs
+import tensorflow_docs.plots
+import tensorflow_docs.modeling
+import matplotlib as plt 
 
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\\formatted_high_lvl_ground_truth.csv'
+PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_deep_class.csv'
-label_cols = ['abrupt', 'abundant', 'active', 'aged', 'airy', 'ambient', 'ancient', 'angry', 'annoyed', 'area', 'arena',
-              'astonishing', 'awful', 'awkward', 'below', 'bitter', 'bizarre', 'black', 'breezy', 'bright', 'broad',
-              'buoyant', 'buried', 'calm', 'cheerful', 'cheery', 'chorus', 'circling', 'cloudy', 'coma', 'comfortable',
-              'comfy', 'contented', 'contrasting', 'cool', 'creepy', 'dark', 'deep', 'delicate', 'depressed',
-              'different', 'dismal', 'disparate', 'earthy', 'eerie', 'fashionable', 'fast', 'flashy', 'funky', 'happy',
-              'hard',
-              'harmonious', 'heavy', 'jazzy', 'light', 'lively', 'loud', 'low', 'luminous', 'mellow', 'moving', 'muted',
-              'old', 'opera', 'orchestra', 'peaceful', 'quick', 'quiet', 'rapture', 'relaxed', 'repetitive', 'sad',
-              'savory', 'scary', 'slow', 'soft', 'solid', 'space', 'strange', 'strong', 'trance', 'upbeat', 'weird']
+label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
+              'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
+              'constant', 'contented', 'contrasting', 'cool', 'curious', 'dark', 'daze', 'deafening', 'deep',
+              'dejected','delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
+              'dreamy', 'dull', 'earthy','easy', 'eccentric', 'ecstatic', 'eerie', 'elated', 'emphatic', 'encouraging',
+              'energetic', 'enveloping', 'extraordinary', 'familiar', 'fashionable', 'fast', 'fiery', 'flashy', 'fluid',
+              'funky', 'gray', 'happy', 'hard', 'harmonious', 'heated', 'heavy', 'hip', 'hopeful', 'jazzy', 'light',
+              'lively','loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
+              'muted','odd','old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound', 'quick',
+              'quiet','rapture', 'relaxed', 'repetitive', 'rich', 'sad', 'scary', 'serene', 'sexy', 'silent',
+              'slow', 'snappy','soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
+              'traditional', 'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
 
 
 def load_file(path):
@@ -28,10 +35,8 @@ def norm(x, train_stats):
 
 def df_to_dataset(data, shuffle=True, batch_size=32):
     data = data.copy()
-
     labels = data[label_cols].copy()
     data.drop(label_cols, axis=1, inplace=True)
-
     ds = tf.data.Dataset.from_tensor_slices((dict(data), labels))
     if shuffle:
         ds = ds.shuffle(buffer_size=len(data))
@@ -51,10 +56,6 @@ def create_model(feature_layer, train, val):
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
 
-    model.fit(train,
-              validation_data=val,
-              epochs=5)
-
     return model
 
 
@@ -64,13 +65,13 @@ def main():
 
     data = data.drop(
         columns=['metadata.tags.musicbrainz_recordingid', 'metadata.tags.artist', 'id', 'metadata.tags.title',
-                 'metadata.tags.album'])
+                 'metadata.tags.album', 'artist', 'title'])
 
     # encode string data
-    artist_encoder = LabelEncoder()
-    data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
-    title_encoder = LabelEncoder()
-    data['title'] = title_encoder.fit_transform(data['title'].astype(str))
+    # artist_encoder = LabelEncoder()
+    # data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
+    # title_encoder = LabelEncoder()
+    # data['title'] = title_encoder.fit_transform(data['title'].astype(str))
 
     # Select training and testing subsets
     train, test = train_test_split(data, test_size=0.2)
@@ -80,20 +81,38 @@ def main():
     print(len(test), 'test examples')
 
     # create input pipeline
-    batch_size = 1000
+    batch_size = 512
+    
     train_ds = df_to_dataset(train, batch_size=batch_size)
     val_ds = df_to_dataset(val, shuffle=False, batch_size=batch_size)
     test_ds = df_to_dataset(test, shuffle=False, batch_size=batch_size)
 
     # get feature cols
     feature_columns = []
-    rest_cols = data[data.columns.difference(label_cols)].columns.values()
-    for header in [rest_cols]:
+    rest_cols = data[data.columns.difference(label_cols)].columns.values
+    for header in rest_cols:
         feature_columns.append(feature_column.numeric_column(header))
 
     feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
 
-    model = create_model()
+    model = create_model(feature_layer, train_ds, val_ds)
+    
+    history = model.fit(train_ds,
+              validation_data=val_ds,
+              epochs=25)
+    
+    loss, acc = model.evaluate(test_ds)
+    test_predictions = model.predict(test_ds).flatten()
+    print(test_predictions)
+    
+    # Visualize
+    plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
+    plotter.plot({'Basic': history}, metric="acc")
+    plt.show()
+
+    plotter.plot({'Basic': history}, metric="loss")
+    plt.show()
+
 
 
 if __name__ == '__main__':
