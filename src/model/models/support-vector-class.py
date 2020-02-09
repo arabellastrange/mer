@@ -14,19 +14,27 @@ PATH_MOOD = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_tr
 PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_PREDICTED_SVM = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_svm_class.csv'
 
-# dropped: 'ecstasy', 'repeated', 'reticent'
 label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
               'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
               'constant', 'contented', 'contrasting', 'cool', 'curious', 'dark', 'daze', 'deafening', 'deep',
-              'dejected','delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
-              'dreamy', 'dull', 'earthy','easy', 'eccentric', 'ecstatic', 'eerie', 'elated', 'emphatic', 'encouraging',
+              'dejected', 'delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
+              'dreamy', 'dull', 'earthy', 'easy', 'eccentric', 'ecstatic', 'eerie', 'elated', 'emphatic', 'encouraging',
               'energetic', 'enveloping', 'extraordinary', 'familiar', 'fashionable', 'fast', 'fiery', 'flashy', 'fluid',
               'funky', 'gray', 'happy', 'hard', 'harmonious', 'heated', 'heavy', 'hip', 'hopeful', 'jazzy', 'light',
-              'lively','loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
-              'muted','odd','old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound', 'quick',
-              'quiet','rapture', 'relaxed', 'repetitive', 'rich', 'sad', 'scary', 'serene', 'sexy', 'silent',
-              'slow', 'snappy','soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
+              'lively', 'loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
+              'muted', 'odd', 'old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound',
+              'quick',
+              'quiet', 'rapture', 'relaxed', 'repetitive', 'rich', 'sad', 'scary', 'serene', 'sexy', 'silent',
+              'slow', 'snappy', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
               'traditional', 'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
+too_few_occur = ['scary', 'zippy', 'animated', 'sexy', 'flashy', 'lively', 'eccentric', 'operatic', 'orchestral',
+                 'quick', 'hip', 'fashionable', 'unconventional', 'modish', 'earthy', 'hopeful', 'cheery',
+                 'encouraging', 'buoyant', 'despondent', 'traditional', 'weighty', 'familiar', 'gray', 'rich',
+                 'boisterous', 'deafening', 'emphatic', 'big', 'distinctive', 'bizarre', 'sunny', 'ecstasy', 'rapture',
+                 'contrasting', 'dreamy', 'astonishing', 'luminous', 'peculiar', 'bright', 'extraordinary', 'daze',
+                 'mild', 'harmonious', 'cool', 'complex', 'soothing', 'sweet', 'profound', 'dim', 'somber', 'bleak',
+                 'black', 'repeated', 'boring', 'snappy', 'constant', 'energetic', 'monotonous', 'dull', 'odd',
+                 'difficult', 'dejected']
 h = .02  # step size in the mesh
 
 
@@ -45,6 +53,14 @@ def process_data(data):
         columns=['metadata.tags.musicbrainz_recordingid', 'metadata.tags.artist', 'id', 'metadata.tags.title',
                  'metadata.tags.album', 'title', 'artist'], inplace=True)
 
+    # drop sparse labels
+    for i, row in data.iterrows():
+        for tag in too_few_occur:
+            if row['mood']:
+                if tag in row['mood']:
+                    row['mood'].remove(tag)
+                    data.at[i, 'mood'] = row['mood']
+
     # encode string data
     # artist_encoder = LabelEncoder()
     # data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
@@ -58,7 +74,7 @@ def process_data(data):
 # assign only the tags with the highest confidence
 def get_best_tags(clf, X, lb, n_tags=3):
     decfun = clf.decision_function(X)
-    best_tags = np.argsort(decfun)[:, :-(n_tags+1): -1]
+    best_tags = np.argsort(decfun)[:, :-(n_tags + 1): -1]
     return lb.classes_[best_tags]
 
 
@@ -68,7 +84,7 @@ def main():
 
     # one-hot encoding mood classes
     mlb = MultiLabelBinarizer()
-    Y = pd.DataFrame(mlb.fit_transform(data.pop('mood')),  columns=mlb.classes_, index=data.index)
+    Y = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
     X = data
 
     # scale x
@@ -99,7 +115,7 @@ def main():
 
     # Plot the decision boundary.
     # if hasattr(classifier, "decision_function"):
-        # Z = classifier.decision_function(x_test)
+    # Z = classifier.decision_function(x_test)
     #    Z = classifier.decision_function(np.c_[xx.ravel(), yy.ravel()])
 
     # Z = Z.reshape(xx.shape)

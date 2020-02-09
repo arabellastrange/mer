@@ -1,13 +1,11 @@
 import tensorflow as tf
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 from tensorflow import feature_column
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 import tensorflow_docs as tfdocs
 import tensorflow_docs.plots
-import tensorflow_docs.modeling
-import matplotlib as plt 
+import matplotlib as plt
 
 PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_deep_class.csv'
@@ -112,7 +110,6 @@ def main():
 
     plotter.plot({'Basic': history}, metric="loss")
     plt.show()
-
 
 
 if __name__ == '__main__':
