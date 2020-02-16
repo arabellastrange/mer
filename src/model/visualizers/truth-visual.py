@@ -43,7 +43,7 @@ def main():
 
     # plot number of songs for every tag
     mood_info = data['mood'].apply(pd.Series).stack().value_counts()
-    # drop tags with one hundred occurences
+    # drop tags with one hundred occurrences
     m = mood_info[mood_info < 45]
     print(m)
     mood_info = mood_info[mood_info > 100]

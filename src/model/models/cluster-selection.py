@@ -11,7 +11,9 @@ from sklearn.preprocessing import LabelEncoder
 
 PATH_PREDICTED_SVM = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_SVM.csv'
 PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_DEEP.csv'
+PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
 PATH_CLUSTERED = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_clustered.csv'
+label_cols = []
 
 
 def load_file(path):
@@ -20,13 +22,14 @@ def load_file(path):
 
 def cluster(data):
     print(data.head())
-    kmeans = KMeans(n_clusters=5)
-    y = kmeans.fit_predict(data[['arousal', 'valence']])
+    kmeans = KMeans(n_clusters=20)
+
+    y = kmeans.fit_predict(data[label_cols])
 
     data['Cluster'] = y
 
     # visualise
-    plt.scatter(data['arousal'], data['valence'], c=y, s=50, cmap='viridis')
+    plt.scatter(data['happy'], data['valence'], c=y, s=50, cmap='viridis')
 
     centers = kmeans.cluster_centers_
     print(centers)
@@ -37,20 +40,20 @@ def cluster(data):
 
 
 def select_songs(data):
-    return data.sample(n=8, replace=True)
+    return data.sample(n=8)
 
 
 def main():
     # predict valence from arousal in ground truth - example regessor
     data = load_file(PATH_PREDICTED_DEEP)
-    
+    data_id = float(PATH_ID)
+    data = pd.merge(data, data_id, on=['id'])
+
     artist_encoder = LabelEncoder()
     data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
     title_encoder = LabelEncoder()
     data['title'] = title_encoder.fit_transform(data['title'].astype(str))
-    
-    data = data.dropna()
-    
+
     data = cluster(data)
     
     data['artist'] = artist_encoder.inverse_transform(data['artist'])
@@ -58,10 +61,16 @@ def main():
     print(data.head())
 
     data.to_csv(PATH_CLUSTERED, index=False)
-    songs = select_songs(data.loc[data['Cluster'] == 1])
+
+    # Playlists
+    songs_1 = select_songs(data.loc[data['Cluster'] == 1])
+    songs_10 = select_songs(data.loc[data['Cluster'] == 10])
     
-    print(songs['artist'])
-    print(songs['title'])
+    print(songs_1['artist'])
+    print(songs_1['title'])
+
+    print(songs_10['artist'])
+    print(songs_10['title'])
 
 
 if __name__ == '__main__':

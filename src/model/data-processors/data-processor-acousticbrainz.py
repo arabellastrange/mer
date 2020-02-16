@@ -1,3 +1,6 @@
+import ast
+from statistics import median, mean
+
 import pandas as pd
 
 mood_columns = ['highlevel.mood_acoustic.all.acoustic', 'highlevel.mood_acoustic.all.not_acoustic',
@@ -167,29 +170,78 @@ drop_cols = ['highlevel.danceability.version.essentia', 'highlevel.danceability.
 PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_class.csv'
 PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_class.csv'
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
-PATH_TRUTH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
+PATH_TRUTH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
+PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
+
+array_cols_to_flatten = ['lowlevel.barkbands.max', 'lowlevel.barkbands.mean', 'lowlevel.barkbands.median',
+                         'lowlevel.barkbands.min', 'lowlevel.erbbands.max', 'lowlevel.erbbands.mean',
+                         'lowlevel.erbbands.median',
+                         'lowlevel.erbbands.min', 'lowlevel.gfcc.mean',
+                         'lowlevel.melbands.max','lowlevel.melbands.mean',
+                         'lowlevel.melbands.median', 'lowlevel.melbands.min',
+                         'lowlevel.mfcc.mean','lowlevel.spectral_contrast_coeffs.max',
+                         'lowlevel.spectral_contrast_coeffs.mean', 'lowlevel.spectral_contrast_coeffs.median',
+                         'lowlevel.spectral_contrast_coeffs.min', 'lowlevel.spectral_contrast_valleys.max',
+                         'lowlevel.spectral_contrast_valleys.mean', 'lowlevel.spectral_contrast_valleys.median',
+                         'lowlevel.spectral_contrast_valleys.min','rhythm.beats_loudness_band_ratio.max',
+                         'rhythm.beats_loudness_band_ratio.mean',
+                         'rhythm.beats_loudness_band_ratio.median', 'rhythm.beats_loudness_band_ratio.min',
+                         'tonal.chords_histogram','tonal.hpcp.max', 'tonal.hpcp.mean', 'tonal.hpcp.median',
+                         'tonal.hpcp.min', 'tonal.thpcp']
 
 
 def load_file(path):
     return pd.read_csv(path)
 
 
-def fetch_audio_data_for_truth(ground_truth, audio_data):
+def fetch_low_audio_data_for_truth(ground_truth, lowlvl_data):
+    lowlvl_data = lowlvl_data.drop_duplicates()
+    lowlvl_data = drop_extra_information(lowlvl_data)
+    lowlvl_data = lowlvl_data.drop(columns=drop_cols, errors='ignore')
+    lowlvl_data = drop_performer_info(lowlvl_data)
+    lowlvl_data = format_array_types(lowlvl_data)
+    lowlvl_data = lowlvl_data.reset_index(drop=True)
+    lowlvl_data = drop_extra_stats(lowlvl_data)
+    lowlvl_data = flatten_band_info(lowlvl_data)
+    labelled = pd.merge(ground_truth.astype(str), lowlvl_data.astype(str), left_on=['id'],
+                        right_on=['metadata.tags.musicbrainz_recordingid'])
+    return labelled
+
+
+def fetch_high_audio_data_for_truth(ground_truth, audio_data):
     data = format_audio_data(audio_data)
     labelled = pd.merge(ground_truth.astype(str), data.astype(str), left_on=['id'],
                         right_on=['metadata.tags.musicbrainz_recordingid'])
     return labelled
 
 
+def flatten_band_info(data):
+    # flatten spectral energy bands
+    for c in array_cols_to_flatten:
+            if '.min' in c:
+                data[c] = data[c].apply(lambda m: min(m))
+            elif '.max' in c:
+                data[c] = data[c].apply(lambda m: max(m))
+            elif '.median' in c:
+                data[c] = data[c].apply(lambda m: median(m))
+            elif '.mean' in c:
+                data[c] = data[c].apply(lambda m: mean(m))
+
+    return data
+
+
 def format_audio_data(data):
     data = data.drop_duplicates()
     data = drop_mood_information(data)
     data = drop_extra_information(data)
-    data = data.drop(columns=drop_cols)
+    data = data.drop(columns=drop_cols, errors='ignore')
+    data = drop_performer_info(data)
+    data = data.reset_index(drop=True)
+    data = format_array_types(data)
+    return data
 
-    performer_cols = [c for c in data.columns if 'metadata.tags.performer:' in c]
-    data = data.drop(columns=performer_cols)
 
+def format_array_types(data):
     data['metadata.tags.musicbrainz_recordingid'] = data['metadata.tags.musicbrainz_recordingid'].astype(str).apply(
         lambda x: x.strip("[]'"))
     data['metadata.tags.artist'] = data['metadata.tags.artist'].astype(str).apply(
@@ -198,9 +250,6 @@ def format_audio_data(data):
         lambda x: x.strip("[]'"))
     data['metadata.tags.album'] = data['metadata.tags.title'].astype(str).apply(
         lambda x: x.strip("[]'"))
-
-    data = data.reset_index(drop=True)
-
     return data
 
 
@@ -209,29 +258,50 @@ def drop_mood_information(data):
     return data
 
 
+def drop_performer_info(data):
+    performer_cols = [c for c in data.columns if 'metadata.tags.performer:' in c]
+    data = data.drop(columns=performer_cols)
+    return data
+
+
+def drop_extra_stats(data):
+    # from stats only want to keep, min, max, median and mean
+    stats_cols = []
+    for c in data.columns:
+        if 'lowlevel' in c:
+            if all(s not in c for s in ['.min', '.max', '.median', '.mean']):
+                stats_cols.append(c)
+    data = data.drop(columns=stats_cols)
+    return data
+
+
 def drop_extra_information(data):
-    data = data.drop(columns=extra_columns)
+    data = data.drop(columns=extra_columns, errors='ignore')
     return data
 
 
 def main():
     # input
-    data = load_file(PATH_ID)
-    highlvl_data = load_file(PATH_HIGH)
-    lowlvl_data = load_file(PATH_LOW)
+    high_audio = load_file(PATH_HIGH)
+    low_audio = load_file(PATH_LOW)
+    data_id = load_file(PATH_ID)
 
-    ground_truth = fetch_audio_data_for_truth(data, highlvl_data)
-    print("Ground truth: ")
-    print(ground_truth.head())
+    # data = load_file(PATH_TRUTH_LOW)
 
-    # ground_truth = pd.read_csv(PATH_TRUTH)
-    # for i, row in ground_truth.iterrows():
-    #    if row['artist'] != row['metadata.tags.artist']:
-    #        if row['title'] != row['metadata.tags.title']:
-    #            print(row)
+    # possibly weird merging side effect causing lots to empty columns at the end
+    # unnamed_cols = [c for c in data.columns if 'Unnamed' in c]
+    # data = data.drop(columns=unnamed_cols)
+
+    for a in array_cols_to_flatten:
+        low_audio[a] = low_audio[a].apply(ast.literal_eval)
+
+    ground_truth_high = fetch_high_audio_data_for_truth(data_id, high_audio)
+    ground_truth_low = fetch_low_audio_data_for_truth(data_id, low_audio)
+    ground_truth_low = flatten_band_info(ground_truth_low)
 
     # output
-    ground_truth.to_csv(PATH_TRUTH, index=False)
+    ground_truth_high.to_csv(PATH_TRUTH_HIGH, index=False)
+    ground_truth_low.to_csv(PATH_TRUTH_LOW, index=False)
 
 
 if __name__ == '__main__':

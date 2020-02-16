@@ -26,23 +26,26 @@ def json_to_dataframe(json):
 
 
 def main():
-    highlvl_dataframe = pd.DataFrame()
-    lowlvl_dataframe = pd.DataFrame()
-
+    highlvl_dataframe = pd.read_csv(PATH_HIGH)
+    highlvl_dataframe['metadata.tags.musicbrainz_recordingid'] = highlvl_dataframe[
+        'metadata.tags.musicbrainz_recordingid'].apply(lambda s: s.strip())
+    lowlvl_dataframe = pd.read_csv(PATH_LOW)
     data = pd.read_csv(PATH_ID)
 
     # drop unidentified entries
     index_names = data[data['id'].isnull()].index
     data.drop(index_names, inplace=True)
-    print(data.info())
 
     for i, row in data.iterrows():
-        high_url = "https://acousticbrainz.org/" + row['id'] + "/high-level"
-        low_url = "https://acousticbrainz.org/" + row['id'] + "/low-level"
-        print(high_url)
+        if row['id'] == 'x' or row['id'] in highlvl_dataframe['metadata.tags.musicbrainz_recordingid'].values:
+            pass
+        else:
+            high_url = "https://acousticbrainz.org/" + row['id'] + "/high-level"
+            low_url = "https://acousticbrainz.org/" + row['id'] + "/low-level"
+            print(high_url)
 
-        highlvl_dataframe = highlvl_dataframe.append(json_to_dataframe(request_song_data(high_url)), sort=True)
-        lowlvl_dataframe = lowlvl_dataframe.append(json_to_dataframe(request_song_data(low_url)), sort=True)
+            highlvl_dataframe = highlvl_dataframe.append(json_to_dataframe(request_song_data(high_url)), sort=True)
+            lowlvl_dataframe = lowlvl_dataframe.append(json_to_dataframe(request_song_data(low_url)), sort=True)
 
     print("output: ")
     print(highlvl_dataframe.head())
