@@ -44,6 +44,7 @@ def process_data(data, flag='high'):
 
     data_mood = load_file(PATH_MOOD)
     data_mood['mood'] = data_mood['mood'].apply(ast.literal_eval)
+
     data = pd.merge(data, data_mood[['mood', 'title', 'artist']], on=['title', 'artist'])
 
     data.drop(
@@ -51,12 +52,12 @@ def process_data(data, flag='high'):
                  'metadata.tags.album', 'title', 'artist', 'fallback-id'], inplace=True)
 
     # drop uncommon mood tags
-    for i, row in data.iterrows():
-        for m_tag in get_uncommon_tags(data['mood']):
-            if m_tag in row['mood']:
-                row['mood'].remove(m_tag)
-        print('updating row: {:d}'.format(i))
-        data.at[i, 'mood'] = row['mood']
+    # for i, row in data.iterrows():
+    #     for m_tag in get_uncommon_tags(data['mood']):
+    #         if m_tag in row['mood']:
+    #             row['mood'].remove(m_tag)
+    #     print('updating row: {:d}'.format(i))
+    #     data.at[i, 'mood'] = row['mood']
 
     if flag == 'high':
         data = process_high_data(data)
@@ -89,8 +90,7 @@ def process_high_data(data):
     # get rid of empty row after dropping sparse classes
     for i, row in data.iterrows():
         if row['mood'] == '' or row['mood'] == 'fast' or row['mood'] == 'slow':
-            data.drop(i)
-
+            data = data.drop(i)
     return data
 
 
@@ -105,7 +105,6 @@ def get_best_tags(clf, X, lb, n_tags=3):
 def get_uncommon_tags(mood_array):
     mood_array = mood_array.apply(pd.Series).stack().value_counts()
     mood_array = mood_array[mood_array < 50]
-
     return mood_array.keys()
 
 
@@ -116,8 +115,9 @@ def model_low_high_features():
 
 
 def model_high_features():
-    data = load_file(PATH_TRUTH_HIGH)
-    data = process_data(data)
+    # data = load_file(PATH_TRUTH_HIGH)
+    # data = process_data(data)
+    data = load_file(PATH_TRUTH_HIGH_CLASS)
     data['mood'] = data['mood'].apply(ast.literal_eval)
     run_model(data)
 
@@ -128,13 +128,15 @@ def run_model(data):
     # one-hot encoding mood classes
     mlb = MultiLabelBinarizer()
     Y = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
+
     X = data.drop(columns=['id'])
 
     # scale x
     X = StandardScaler().fit_transform(X)
 
     # split dataset
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.40, random_state=19)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.40, random_state=6)
+
     svm_model(x_train, y_train, x_test, y_test, mlb)
     rand_forest_model(x_train,y_train,x_test,y_test, mlb)
 
@@ -143,11 +145,13 @@ def rand_forest_model(x_train, y_train, x_test, y_test, mlb):
     classifier = RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)
     classifier.fit(x_train, y_train)
 
-    y_pred = mlb.inverse_transform(classifier.predict(x_test))
-    print(y_pred[:5])
+    # y_pred = mlb.inverse_transform(classifier.predict(x_test))
+    # y_pred = get_best_tags(classifier, x_test, mlb)
+    y_pred = classifier.predict(x_test)
 
-    output_predictions_to_file(x_test, y_pred, PATH_PREDICTED_H_RFOR)
-    y_pred_frame = pd.DataFrame(mlb.transform(y_pred), columns=mlb.classes_)
+    # output_predictions_to_file(x_test, y_pred, PATH_PREDICTED_H_RFOR)
+
+    y_pred_frame = pd.DataFrame(y_pred, columns=mlb.classes_)
 
     score = f1_score(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1), average='micro')
     print('Score Forest: ')
@@ -162,12 +166,13 @@ def svm_model(x_train, y_train, x_test, y_test, mlb):
     classifier.fit(x_train, y_train)
 
     # predict, make Confusion Matrix and score
-    y_pred = mlb.inverse_transform(classifier.predict(x_test))
-    print(y_pred[:5])
+    # y_pred = mlb.inverse_transform(classifier.predict(x_test))
+    y_pred = classifier.predict(x_test)
+    # y_pred = get_best_tags(classifier, x_test, mlb)
+    print(mlb.inverse_transform(y_pred))
 
-    output_predictions_to_file(x_test, y_pred, PATH_PREDICTED_H_SVM)
-    y_pred_frame = pd.DataFrame(mlb.transform(y_pred), columns=mlb.classes_)
-
+    # output_predictions_to_file(data, y_pred, PATH_PREDICTED_H_SVM)
+    y_pred_frame = pd.DataFrame(y_pred, columns=mlb.classes_)
     # flatten y predicted data frames to array
     # c_matrix = multilabel_confusion_matrix(y_test.values, y_pred_frame.values)
     # print(c_matrix)
@@ -179,8 +184,10 @@ def svm_model(x_train, y_train, x_test, y_test, mlb):
     print(report)
 
 
-def output_predictions_to_file(x , y, file):
-    predictions_frame = pd.DataFrame(y, columns='mood')
+def output_predictions_to_file(x, y, file):
+    predictions_series = pd.Series(y)
+    predictions_frame = pd.DataFrame()
+    predictions_frame['mood'] = predictions_series
     predictions = x.join(predictions_frame)
     predictions.to_csv(file, index=False)
 

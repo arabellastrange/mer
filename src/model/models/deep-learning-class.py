@@ -125,12 +125,17 @@ def process_low_data(data):
 
 
 def run_high_level_model():
-    data = load_file(PATH_TRUTH_HIGH)
-    data = process_data(data)
+    # data = load_file(PATH_TRUTH_HIGH)
+    # data = process_data(data)
+
+    mlb = MultiLabelBinarizer()
+    data = load_file(PATH_TRUTH_HIGH_CLASS)
+    data['mood'] = data['mood'].apply(ast.literal_eval)
+    data = pd.DataFrame(mlb.fit_transform(data['mood']), columns=mlb.classes_, index=data.index)
 
     # Select training and testing subsets
     train, test = train_test_split(data, test_size=0.2)
-    train, val = train_test_split(train.drop(column='id'), test_size=0.2)
+    train, val = train_test_split(train.drop(columns=['id']), test_size=0.2)
     print(len(train), 'train examples')
     print(len(val), 'validation examples')
     print(len(test), 'test examples')

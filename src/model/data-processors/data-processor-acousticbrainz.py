@@ -170,6 +170,7 @@ drop_cols = ['highlevel.danceability.version.essentia', 'highlevel.danceability.
 PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_class.csv'
 PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_class.csv'
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
+
 PATH_TRUTH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
 
@@ -195,13 +196,12 @@ def load_file(path):
 
 
 def fetch_low_audio_data_for_truth(ground_truth, lowlvl_data):
-    lowlvl_data = lowlvl_data.drop_duplicates()
+    lowlvl_data = drop_extra_stats(lowlvl_data)
     lowlvl_data = drop_extra_information(lowlvl_data)
     lowlvl_data = lowlvl_data.drop(columns=drop_cols, errors='ignore')
     lowlvl_data = drop_performer_info(lowlvl_data)
     lowlvl_data = format_array_types(lowlvl_data)
     lowlvl_data = lowlvl_data.reset_index(drop=True)
-    lowlvl_data = drop_extra_stats(lowlvl_data)
     lowlvl_data = flatten_band_info(lowlvl_data)
     labelled = pd.merge(ground_truth.astype(str), lowlvl_data.astype(str), left_on=['id'],
                         right_on=['metadata.tags.musicbrainz_recordingid'])
@@ -216,23 +216,26 @@ def fetch_high_audio_data_for_truth(ground_truth, audio_data):
 
 
 def flatten_band_info(data):
+    for a in array_cols_to_flatten:
+        data[a] = data[a].apply(ast.literal_eval)
+
     # flatten spectral energy bands
     for c in array_cols_to_flatten:
-            if '.min' in c:
-                data[c] = data[c].apply(lambda m: min(m))
-            elif '.max' in c:
-                data[c] = data[c].apply(lambda m: max(m))
-            elif '.median' in c:
-                data[c] = data[c].apply(lambda m: median(m))
-            elif '.mean' in c:
-                data[c] = data[c].apply(lambda m: mean(m))
+        if '.min' in c:
+            data[c] = data[c].apply(lambda m: min(m))
+        elif '.max' in c:
+            data[c] = data[c].apply(lambda m: max(m))
+        elif '.median' in c:
+            data[c] = data[c].apply(lambda m: median(m))
+        elif '.mean' in c:
+            data[c] = data[c].apply(lambda m: mean(m))
 
     return data
 
 
 def format_audio_data(data):
-    data = data.drop_duplicates()
     data = drop_mood_information(data)
+    data = data.drop_duplicates()
     data = drop_extra_information(data)
     data = data.drop(columns=drop_cols, errors='ignore')
     data = drop_performer_info(data)
@@ -286,21 +289,19 @@ def main():
     low_audio = load_file(PATH_LOW)
     data_id = load_file(PATH_ID)
 
-    # data = load_file(PATH_TRUTH_LOW)
+    # ground_truth_high = fetch_high_audio_data_for_truth(data_id, high_audio)
+    # ground_truth_low = fetch_low_audio_data_for_truth(data_id, low_audio)
+
+    high = load_file(PATH_TRUTH_HIGH)
+    low = load_file(PATH_TRUTH_LOW)
+    ground_truth_low = pd.merge(high, low, on=['id'])
 
     # possibly weird merging side effect causing lots to empty columns at the end
-    # unnamed_cols = [c for c in data.columns if 'Unnamed' in c]
-    # data = data.drop(columns=unnamed_cols)
-
-    for a in array_cols_to_flatten:
-        low_audio[a] = low_audio[a].apply(ast.literal_eval)
-
-    ground_truth_high = fetch_high_audio_data_for_truth(data_id, high_audio)
-    ground_truth_low = fetch_low_audio_data_for_truth(data_id, low_audio)
-    ground_truth_low = flatten_band_info(ground_truth_low)
+    unnamed_cols = [c for c in ground_truth_low.columns if 'Unnamed' in c]
+    ground_truth_low = ground_truth_low.drop(columns=unnamed_cols)
 
     # output
-    ground_truth_high.to_csv(PATH_TRUTH_HIGH, index=False)
+    # ground_truth_high.to_csv(PATH_TRUTH_HIGH, index=False)
     ground_truth_low.to_csv(PATH_TRUTH_LOW, index=False)
 
 

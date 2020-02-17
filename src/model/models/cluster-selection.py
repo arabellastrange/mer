@@ -29,8 +29,6 @@ def cluster(data):
     data['Cluster'] = y
 
     # visualise
-    plt.scatter(data['happy'], data['valence'], c=y, s=50, cmap='viridis')
-
     centers = kmeans.cluster_centers_
     print(centers)
     plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5);
