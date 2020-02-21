@@ -42,7 +42,7 @@ def main():
     x_train_v, x_test_v, y_train_v, y_test_v = train_test_split(X, Y_valence, test_size=0.33, random_state=19)
     x_train_a, x_test_a, y_train_a, y_test_a = train_test_split(X, Y_arousal, test_size=0.33, random_state=19)
 
-    # model - uses Radial Basis Function (RBF)
+    # ml - uses Radial Basis Function (RBF)
     # the gamma parameter defines how far the influence of a single training example reaches, with low values meaning
     # ‘far’ and high values meaning ‘close’.
     # For larger values of C, a smaller margin [of error] will be accepted if the decision function is better at

@@ -170,7 +170,7 @@ def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
 
 def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
-    # model "RBF SVM"
+    # ml "RBF SVM"
     classifier = OneVsRestClassifier(SVC(kernel='rbf', gamma=0.1, C=1))
     classifier.fit(x_train, y_train)
     y_pred = classifier.predict(x_test)

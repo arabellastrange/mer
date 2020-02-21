@@ -9,7 +9,6 @@ from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
 import tensorflow_docs as tfdocs
 import tensorflow_docs.plots
-import matplotlib as plt
 
 PATH_MOOD = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
 
@@ -200,20 +199,20 @@ def run_high_level_model():
     # for header in rest_cols:
     #   feature_columns.append(feature_column.numeric_column(header))
     # feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
-    # model = create_model(feature_layer, train_ds, val_ds)
+    # ml = create_model(feature_layer, train_ds, val_ds)
     estimator = create_estimator(rest_cols, label_cols, 'train')
     estimator.train(train_input_fn)
     results = estimator.evaluate(eval_input_fn)
     print(results)
 
-    # history = model.fit(train_ds,
+    # history = ml.fit(train_ds,
     #                    validation_data=val_ds,
     #                    epochs=25)
-    # print(model.summary())
-    # loss, acc = model.evaluate(test_ds)
+    # print(ml.summary())
+    # loss, acc = ml.evaluate(test_ds)
     # print(loss)
     # print(acc)
-    # test_predictions = model.predict(test_ds)
+    # test_predictions = ml.predict(test_ds)
     # print(test_predictions[:5])
     # visualize(history)
     # output_predictions(test, test_predictions)

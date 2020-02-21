@@ -77,7 +77,7 @@ def main():
     normed_train_data = norm(train_dataset, train_stats)
     normed_test_data = norm(test_dataset, train_stats)
 
-    # Build model
+    # Build ml
     model_v = build_model(train_dataset)
     print(model_v.summary())
 
