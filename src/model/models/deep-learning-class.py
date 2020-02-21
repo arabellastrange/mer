@@ -3,6 +3,7 @@ import ast
 import tensorflow as tf
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
+from sklearn.preprocessing import LabelEncoder
 from tensorflow import feature_column
 from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
@@ -22,18 +23,19 @@ PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classifi
 label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
               'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
               'constant', 'contented', 'contrasting', 'cool', 'curious', 'dark', 'daze', 'deafening', 'deep',
-              'dejected', 'delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
+              'delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
               'dreamy', 'dull', 'earthy', 'easy', 'eccentric', 'ecstatic', 'ecstasy', 'eerie', 'elated', 'emphatic',
               'encouraging',
-              'energetic', 'enveloping', 'extraordinary', 'familiar', 'fashionable', 'fast', 'fiery', 'flashy', 'fluid',
-              'funky', 'gray', 'happy', 'hard', 'harmonious', 'heated', 'heavy', 'hip', 'hopeful', 'jazzy', 'light',
+              'enveloping', 'extraordinary', 'fashionable', 'fast', 'fiery', 'flashy', 'fluid',
+              'funky', 'happy', 'hard', 'harmonious', 'heated', 'heavy', 'hip', 'hopeful', 'jazzy', 'light',
               'lively', 'loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
               'muted', 'odd', 'old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound',
               'quick',
-              'quiet', 'rapture', 'relaxed', 'repeated' ,'repetitive', 'rich', 'reticent', 'sad', 'scary', 'serene',
-              'sexy','silent',
-              'slow', 'snappy', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
-              'traditional', 'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
+              'quiet', 'rapture', 'relaxed', 'repeated', 'repetitive', 'rich', 'reticent', 'sad', 'scary', 'serene',
+              'sexy', 'silent',
+              'slow', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
+              'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
+l_cols = ['dejected', 'snappy', 'gray', 'traditional', 'energetic', 'familiar']
 
 
 def load_file(path):
@@ -44,7 +46,7 @@ def norm(x, train_stats):
     return (x - train_stats['mean']) / train_stats['std']
 
 
-def df_to_dataset(data, shuffle=True, batch_size=32):
+def df_to_dataset(data, shuffle=True, batch_size=512):
     data = data.copy()
     labels = data[label_cols].copy()
     data.drop(label_cols, axis=1, inplace=True)
@@ -60,15 +62,44 @@ def create_model(feature_layer, train, val):
         feature_layer,
         layers.Dense(128, activation='relu'),
         layers.Dense(128, activation='relu'),
-        layers.Dense(1, activation='sigmoid')
+        layers.Dense(1, activation='sigmoid'),
+        layers.Activation('relu')
     ])
 
     model.compile(optimizer='adam',
                   loss='binary_crossentropy',
                   metrics=['accuracy'])
-    print(model.summary())
 
     return model
+
+
+def custom_model_fn(features, labels, mode):
+    my_head = tf.estimator.MultiLabelHead(n_classes=112)
+
+    feature_columns = []
+    for header in features:
+        feature_columns.append(feature_column.numeric_column(header))
+    feature_layer = layers.DenseFeatures(feature_columns)
+    inputs = feature_layer(features)
+
+    model = tf.keras.Sequential()
+    model.add(layers.Dense(128, activation='relu'))
+    model.add(layers.Dense(128, activation='relu'))
+    model.add(layers.Dense(1, activation='sigmoid'))
+    model.add(tf.keras.layers.Dense(units=my_head.logits_dimension, activation=None))
+    logits = model(inputs)
+
+    return my_head.create_estimator_spec(
+        features=features,
+        mode=mode,
+        labels=labels,
+        optimizer=tf.keras.optimizers.Adagrad(lr=0.1),
+        logits=logits)
+
+
+def create_estimator(features, labels, mode):
+    custom_estimator = tf.estimator.Estimator(model_fn=custom_model_fn(features, labels, mode))
+    return custom_estimator
 
 
 def process_data(data, flag='high'):
@@ -107,21 +138,33 @@ def process_high_data(data):
 
 
 def process_low_data(data):
-    mlb_scale = MultiLabelBinarizer()
-    mlb_key = MultiLabelBinarizer()
-    mlb_chord = MultiLabelBinarizer()
+    lb_scale = LabelEncoder()
+    lb_scale.fit(['major', 'minor'])
+    lb_key = LabelEncoder()
+    lb_key.fit(['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'])
 
-    data = data.join(
-        pd.DataFrame(mlb_scale.fit_transform(data.pop('tonal.key_scale').astype(str)), columns=mlb_scale.classes_,
-                     index=data.index))
-    data = data.join(
-        pd.DataFrame(mlb_chord.fit_transform(data.pop('tonal.chords_scale').astype(str)), columns=mlb_chord.classes_,
-                     index=data.index))
-    data = data.join(
-        pd.DataFrame(mlb_key.fit_transform(data.pop('tonal.key_key').astype(str)), columns=mlb_key.classes_,
-                     index=data.index))
+    data['tonal.key_scale'] = data['tonal.key_scale'].astype(str)
+    data['tonal.chords_scale'] = data['tonal.chords_scale'].astype(str)
+    data['tonal.chords_key'] = data['tonal.chords_key'].astype(str)
+    data['tonal.key_key'] = data['tonal.key_key'].astype(str)
+
+    data['tonal.key_scale'] = lb_scale.transform(data['tonal.key_scale'])
+    data['tonal.chords_scale'] = lb_scale.transform(data['tonal.chords_scale'])
+    data['tonal.key_key'] = lb_key.transform(data['tonal.key_key'])
+    data['tonal.chords_key'] = lb_key.transform(data['tonal.chords_key'])
 
     return data
+
+
+def make_input_fn(data_df, label_df, num_epochs=25, shuffle=True, batch_size=512):
+    def input_fn():
+        dataset = tf.data.Dataset.from_tensor_slices((dict(data_df), label_df))
+        if shuffle:
+            dataset = dataset.shuffle(1000)
+        dataset = dataset.batch(batch_size).repeat(num_epochs)
+        return dataset
+
+    return input_fn
 
 
 def run_high_level_model():
@@ -131,45 +174,53 @@ def run_high_level_model():
     mlb = MultiLabelBinarizer()
     data = load_file(PATH_TRUTH_HIGH_CLASS)
     data['mood'] = data['mood'].apply(ast.literal_eval)
-    data = pd.DataFrame(mlb.fit_transform(data['mood']), columns=mlb.classes_, index=data.index)
+    data_m = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
+    data = data.join(data_m)
+    dataset = data.drop(columns=['id'])
 
-    # Select training and testing subsets
-    train, test = train_test_split(data, test_size=0.2)
-    train, val = train_test_split(train.drop(columns=['id']), test_size=0.2)
+    train, test = train_test_split(dataset, test_size=0.3)
+    train, val = train_test_split(train, test_size=0.3)
     print(len(train), 'train examples')
     print(len(val), 'validation examples')
     print(len(test), 'test examples')
 
-    # create input pipeline
-    batch_size = 512
+    # Select training and testing subsets
+    train_input_fn = make_input_fn(train, train[label_cols])
+    eval_input_fn = make_input_fn(val, val[label_cols], num_epochs=15, shuffle=False)
 
-    train_ds = df_to_dataset(train, batch_size=batch_size)
-    val_ds = df_to_dataset(val, shuffle=False, batch_size=batch_size)
-    test_ds = df_to_dataset(test, shuffle=False, batch_size=batch_size)
+    # create input pipeline
+    # batch_size = 512
+    # train_ds = df_to_dataset(train, batch_size=batch_size)
+    # val_ds = df_to_dataset(val, shuffle=False, batch_size=batch_size)
+    # test_ds = df_to_dataset(test, shuffle=False, batch_size=batch_size)
 
     # get feature cols
-    feature_columns = []
-    rest_cols = data[data.columns.difference(label_cols)].columns.values
-    for header in rest_cols:
-        feature_columns.append(feature_column.numeric_column(header))
+    # feature_columns = []
+    rest_cols = dataset[dataset.columns.difference(label_cols)].columns.values
+    # for header in rest_cols:
+    #   feature_columns.append(feature_column.numeric_column(header))
+    # feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
+    # model = create_model(feature_layer, train_ds, val_ds)
+    estimator = create_estimator(rest_cols, label_cols, 'train')
+    estimator.train(train_input_fn)
+    results = estimator.evaluate(eval_input_fn)
+    print(results)
 
-    feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
+    # history = model.fit(train_ds,
+    #                    validation_data=val_ds,
+    #                    epochs=25)
+    # print(model.summary())
+    # loss, acc = model.evaluate(test_ds)
+    # print(loss)
+    # print(acc)
+    # test_predictions = model.predict(test_ds)
+    # print(test_predictions[:5])
+    # visualize(history)
+    # output_predictions(test, test_predictions)
 
-    model = create_model(feature_layer, train_ds, val_ds)
 
-    history = model.fit(train_ds,
-                        validation_data=val_ds,
-                        epochs=25)
-
-    loss, acc = model.evaluate(test_ds)
-    print(loss)
-    print(acc)
-
-    test_predictions = model.predict(test_ds).flatten()
-    print(test_predictions)
-
-    visualize(history)
-    output_predictions(test, test_predictions)
+def run_low_level_model():
+    pass
 
 
 def output_predictions(x, y):
@@ -179,14 +230,10 @@ def output_predictions(x, y):
 def visualize(history):
     plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
     plotter.plot({'Basic': history}, metric="acc")
-    plt.show()
+    # plt.show()
 
     plotter.plot({'Basic': history}, metric="loss")
-    plt.show()
-
-
-def run_low_level_model():
-    pass
+    # plt.show()
 
 
 def get_uncommon_tags(mood_array):
@@ -198,7 +245,7 @@ def get_uncommon_tags(mood_array):
 
 def main():
     run_high_level_model()
-    run_low_level_model()
+    # run_low_level_model()
 
 
 if __name__ == '__main__':
