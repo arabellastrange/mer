@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+    <!-- spotify web sdk -->
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.js"
+            integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js"
+            integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U"
+            crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js"
+            integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9"
+            crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/8f0a84e548.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet"
+          href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css"
+          integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+    <link rel="stylesheet" type="text/css" href="view.css">
+
+    <link rel="icon" size="192x192" href="img/music_icon.png">
+    <link rel="apple-touch-icon" href="img/music_icon.png">
+    <link rel="shourtcut icon" href="img/music_icon.png" type="image/x-icon">
+
+    <title>ML Playlist Generator</title>
+</head>
+<body>
+
+<div class="row">
+    <div class="logo-text col-md-12" id='logo-text'>
+        <h1>MER-ML</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div id="main" class="col-md-12">
+        <div id="playlist-gallery"></div>
+    </div>
+</div>
+
+<div id='feedback' class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="question">
+    <div id="feedback-box" class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="col-md-10 question-col">
+                    <h5 id='question' class="modal-title" aria-label="Close">Feedback Questionnaire</h5>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" data-dismiss="modal" id='close' class="btn close"><i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id='answers' class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label class="col-form-label">When would you listen to this playlist?</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxGym" value="gym">
+                            <label class="form-check-label" for="inlineCheckboxGym">Gym</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxParty" value="party">
+                            <label class="form-check-label" for="inlineCheckboxParty">Party</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxStudying" value="study">
+                            <label class="form-check-label" for="inlineCheckboxStudying">Studying</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxRelaxing" value="relax">
+                            <label class="form-check-label" for="inlineCheckboxRelaxing">Relaxing</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxCommute" value="commute">
+                            <label class="form-check-label" for="inlineCheckboxCommute">Commute</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxOtherEvent"
+                                   value="other-event">
+                            <label class="form-check-label" for="inlineCheckboxOtherEvent">Other</label>
+                        </div>
+                        <label class="col-form-label" for="otherEventInput">Other: </label>
+                        <input id='otherEventInput' class="form-control" type="text" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-form-label">What would you describe this playlist as?</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxHappy" value="happy">
+                            <label class="form-check-label" for="inlineCheckboxHappy">Happy, Cheerful, Upbeat</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxSad" value="sad">
+                            <label class="form-check-label" for="inlineCheckboxSad">Sad, Melancholy, Gloomy</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxRelax" value="relax">
+                            <label class="form-check-label" for="inlineCheckboxRelax">Slow, Relaxed, Chill</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxAngry" value="angry">
+                            <label class="form-check-label" for="inlineCheckboxRelax">Angry, Fiery, Passionate</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="inlineCheckboxOtherTag"
+                                   value="other-tag">
+                            <label class="form-check-label" for="inlineCheckboxOtherTag">Other</label>
+                        </div>
+                        <label class="col-form-label" for="otherTagInput">Other: </label>
+                        <input id='otherTagInput' class="form-control" type="text" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label id='mlIdQuestion' class="col-form-label">Would you describe this song as {}?</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="agreeWithTags" id="agreeWithTags"
+                                   value="yes" checked>
+                            <label class="form-check-label radio-label" for="agreeWithTags">Yes</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="disagreeWithTags" id="disagreeWithTags"
+                                   value="no">
+                            <label class="form-check-label radio-label" for="disagreeWithTags">No</label>
+                        </div>
+                    </div>
+                    <div class='form-group'><label id='mlSliderQuestion' class='col-form-label'>How well do you think
+                        this song fits the overall mood of the playlist?</label>
+                        <div id="form-range">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+<footer>
+    <div class="row footer">
+        <div class="col-md-1"></div>
+        <div class="col-md-10">
+            <p>This web page is associated with the final year project of Chadha Degachi at the University of
+                Strathclyde. This project aims to improve automatic playlist generation by the use of machine learning
+                for mood recognition in music. You will be asked to provide feedback on your perceived emotion of these
+                playlist samples and what context you feel they are best suited for. Supervisor: Dr. Marc Roper. CIS
+                Ethic Committee: <a href="ethics@cis.strath.ac.uk">ethics@cis.strath.ac.uk</a></p>
+        </div>
+        <div class="col-md-1"></div>
+    </div>
+    <script src="model.js"></script>
+    <script src="view.js"></script>
+    <script src="controller.js"></script>
+</footer>
+</html>

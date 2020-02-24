@@ -94,7 +94,7 @@ def main():
         p = Playlist(songs)
         playlists.append(p)
 
-    with open("C:/Users/User/PycharmProjects/merml/src/ui/playlists/playlists.json", 'w') as outfile:
+    with open("/ui/playlists.json", 'w') as outfile:
         json.dump(playlists, outfile, cls=MusicEncoder)
 
 
