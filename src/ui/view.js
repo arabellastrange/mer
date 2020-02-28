@@ -2,18 +2,32 @@
 
 var childElement, appendChildElement;
 var all_playlists = new Map();
-var playlistGallery = document.getElementById('playlist-gallery'),
+var agreeButton = document.getElementById('agreeButton'),
+    submitProfileButton = document.getElementById('submit-profile'),
+    playlistGallery = document.getElementById('playlist-gallery'),
     playButton = document.getElementById('playButton'),
-    feedbackButton = document.getElementById('feedbackButton'),
     feedback = document.getElementById('feedback'),
     formRange = document.getElementById('form-range'),
+    formTags = document.getElementById('formTags'),
     playBannerButton = document.getElementById('playBannerButton'),
-    submitFeedback = document.getElementById('submit-feedback'),
     pauseBannerButton = document.getElementById('pauseBannerButton'),
     otherEventButton = document.getElementById('inlineCheckboxOtherEvent'),
     otherTagButton = document.getElementById('inlineCheckboxOtherTag');
 
 function view() {
+    this.setSubmitProfileButtonFunc = function (){
+        submitProfileButton.addEventListener('click', function (e) {
+            //
+        });
+    };
+
+    this.setUserAgreement = function () {
+        console.log('modal loaded');
+        $('#user-agreement').modal({
+            backdrop: false
+        });
+    };
+
     this.setOtherEventFunc = function () {
         otherEventButton.addEventListener('change', function (e) {
             console.log('setting listener on other event');
@@ -33,15 +47,27 @@ function view() {
             var play_no = button.data('whatever'); // Extract info from data-* attributes
             var playlist = all_playlists.get(play_no);
             var songs = "";
+            var tags = [];
+
             console.log(playlist);
             for (var i = 0; i < playlist.songs.length; i++) {
-                songs = songs + "<div><label>" + playlist.songs[i].artist + ' - ' + playlist.songs[i].title + "</label><input type='range' class='custom-range' min='0' max='5' id='songScale"+ i + "'></div>"
+                var scale_id = "songScale" + play_no + i;
+                songs = songs + "<div><label class='song-label'>" + playlist.songs[i].artist + ' - ' + playlist.songs[i].title + "</label><input type='range' class='custom-range' min='1' max='5' id='" + scale_id + "' step='1' list='tickmarks'><datalist id='tickmarks'><option value='1' label='1'></option><option value='2'></option><option value='3' label='3'></option><option value='4'></option><option value='5' label='5'></option></datalist></div>";
+                tags = tags.concat(playlist.songs[i].tags);
             }
             formRange.innerHTML = songs;
+
+            let unique_tags = tags.filter((item, i, ar) => ar.indexOf(item) === i);
+            formTags.innerText = 'Would you describe this playlist as: ' + unique_tags;
+
         });
 
     }
 
+}
+
+function sendEvent(sel, step) {
+    $(sel).trigger('next.m.' +step)
 }
 
 function setPlayFunc() {
@@ -65,7 +91,7 @@ function generatePlaylists(playlists) {
             html_play = html_play + song_format;
         }
         html_play = html_play + "</ul>";
-        appendChildElement.innerHTML = '<div id="playlist" class = "col-md-4 playlist">' + html_play + '<div class="row btn-row"><button id="playButton" class="btn" type="button">play</button><button type="button" class="btn" id="feedbackButton" data-toggle="modal" data-target="#feedback"  data-whatever= ' + i + '> feedback </button></div></div>';
+        appendChildElement.innerHTML = '<div id="playlist" class = "col-md-4 playlist card">' + html_play + '<div class="row btn-row"><button id="playButton" class="btn" type="button">play</button><button type="button" class="btn" id="feedbackButton" data-toggle="modal" data-target="#feedback"  data-whatever= ' + i + '> feedback </button></div></div>';
 
     }
 }

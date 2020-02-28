@@ -4,11 +4,7 @@ import tensorflow as tf
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.preprocessing import LabelEncoder
-from tensorflow import feature_column
-from tensorflow.keras import layers
 from sklearn.model_selection import train_test_split
-import tensorflow_docs as tfdocs
-import tensorflow_docs.plots
 
 PATH_MOOD = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
 
@@ -18,37 +14,23 @@ PATH_PREDICTED_L_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predic
 PATH_TRUTH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_TRUTH_HIGH_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_min_class.csv'
 PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
+PATH_TRUTH_LOW_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_low_min_class.csv'
 
-label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
-              'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
-              'constant', 'contented', 'contrasting', 'cool', 'curious', 'dark', 'daze', 'deafening', 'deep',
-              'delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
-              'dreamy', 'dull', 'earthy', 'easy', 'eccentric', 'ecstatic', 'ecstasy', 'eerie', 'elated', 'emphatic',
-              'encouraging',
-              'enveloping', 'extraordinary', 'fashionable', 'fast', 'fiery', 'flashy', 'fluid',
-              'funky', 'happy', 'hard', 'harmonious', 'heated', 'heavy', 'hip', 'hopeful', 'jazzy', 'light',
-              'lively', 'loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
-              'muted', 'odd', 'old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound',
-              'quick',
-              'quiet', 'rapture', 'relaxed', 'repeated', 'repetitive', 'rich', 'reticent', 'sad', 'scary', 'serene',
-              'sexy', 'silent',
-              'slow', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
-              'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
-l_cols = ['dejected', 'snappy', 'gray', 'traditional', 'energetic', 'familiar']
+label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
+                  'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
+                  'heated', 'heavy', 'jazzy', 'loud', 'melancholy', 'mellow', 'mournful',
+                  'passionate', 'quiet', 'relaxed', 'sad', 'serene', 'slow', 'soft',
+                  'space', 'storming', 'upbeat', 'weird', 'wistful']
 
 
 def load_file(path):
     return pd.read_csv(path)
 
 
-def norm(x, train_stats):
-    return (x - train_stats['mean']) / train_stats['std']
-
-
 def df_to_dataset(data, shuffle=True, batch_size=512):
     data = data.copy()
-    labels = data[label_cols].copy()
-    data.drop(label_cols, axis=1, inplace=True)
+    labels = data[label_cols_min].copy()
+    data.drop(label_cols_min, axis=1, inplace=True)
     ds = tf.data.Dataset.from_tensor_slices((dict(data), labels))
     if shuffle:
         ds = ds.shuffle(buffer_size=len(data))
@@ -56,53 +38,8 @@ def df_to_dataset(data, shuffle=True, batch_size=512):
     return ds
 
 
-def create_model(feature_layer, train, val):
-    model = tf.keras.Sequential([
-        feature_layer,
-        layers.Dense(128, activation='relu'),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(1, activation='sigmoid'),
-        layers.Activation('relu')
-    ])
-
-    model.compile(optimizer='adam',
-                  loss='binary_crossentropy',
-                  metrics=['accuracy'])
-
-    return model
-
-
-def custom_model_fn(features, labels, mode):
-    my_head = tf.estimator.MultiLabelHead(n_classes=112)
-
-    feature_columns = []
-    for header in features:
-        feature_columns.append(feature_column.numeric_column(header))
-    feature_layer = layers.DenseFeatures(feature_columns)
-    inputs = feature_layer(features)
-
-    model = tf.keras.Sequential()
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dense(1, activation='sigmoid'))
-    model.add(tf.keras.layers.Dense(units=my_head.logits_dimension, activation=None))
-    logits = model(inputs)
-
-    return my_head.create_estimator_spec(
-        features=features,
-        mode=mode,
-        labels=labels,
-        optimizer=tf.keras.optimizers.Adagrad(lr=0.1),
-        logits=logits)
-
-
-def create_estimator(features, labels, mode):
-    custom_estimator = tf.estimator.Estimator(model_fn=custom_model_fn(features, labels, mode))
-    return custom_estimator
-
-
 def process_data(data, flag='high'):
-    data = data.drop(columns=label_cols, errors='ignore')
+    data = data.drop(columns=label_cols_min, errors='ignore')
 
     data_mood = load_file(PATH_MOOD)
     data_mood['mood'] = data_mood['mood'].apply(ast.literal_eval)
@@ -155,26 +92,12 @@ def process_low_data(data):
     return data
 
 
-def make_input_fn(data_df, label_df, num_epochs=25, shuffle=True, batch_size=512):
-    def input_fn():
-        dataset = tf.data.Dataset.from_tensor_slices((dict(data_df), label_df))
-        if shuffle:
-            dataset = dataset.shuffle(1000)
-        dataset = dataset.batch(batch_size).repeat(num_epochs)
-        return dataset
-
-    return input_fn
-
-
-def run_high_level_model():
-    # data = load_file(PATH_TRUTH_HIGH)
-    # data = process_data(data)
-
+def run_model(data):
     mlb = MultiLabelBinarizer()
-    data = load_file(PATH_TRUTH_HIGH_CLASS)
     data['mood'] = data['mood'].apply(ast.literal_eval)
     data_m = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
     data = data.join(data_m)
+    print(data_m.columns)
     dataset = data.drop(columns=['id'])
 
     train, test = train_test_split(dataset, test_size=0.3)
@@ -183,56 +106,62 @@ def run_high_level_model():
     print(len(val), 'validation examples')
     print(len(test), 'test examples')
 
-    # Select training and testing subsets
-    train_input_fn = make_input_fn(train, train[label_cols])
-    eval_input_fn = make_input_fn(val, val[label_cols], num_epochs=15, shuffle=False)
+    ytrain = train[label_cols_min]
+    yval = val[label_cols_min]
+    train = train.drop(columns=label_cols_min)
+    val = val.drop(columns=label_cols_min)
+    ytest = test[label_cols_min]
+    test = test.drop(columns=label_cols_min)
 
-    # create input pipeline
-    # batch_size = 512
-    # train_ds = df_to_dataset(train, batch_size=batch_size)
-    # val_ds = df_to_dataset(val, shuffle=False, batch_size=batch_size)
-    # test_ds = df_to_dataset(test, shuffle=False, batch_size=batch_size)
+    feature_columns = []
+    for feature in train.keys():
+        feature_columns.append(tf.feature_column.numeric_column(key=feature))
 
-    # get feature cols
-    # feature_columns = []
-    rest_cols = dataset[dataset.columns.difference(label_cols)].columns.values
-    # for header in rest_cols:
-    #   feature_columns.append(feature_column.numeric_column(header))
-    # feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
-    # ml = create_model(feature_layer, train_ds, val_ds)
-    estimator = create_estimator(rest_cols, label_cols, 'train')
-    estimator.train(train_input_fn)
-    results = estimator.evaluate(eval_input_fn)
-    print(results)
+    predictions = run_dnn_estimator(feature_columns, train, ytrain, val, yval, test)
 
-    # history = ml.fit(train_ds,
-    #                    validation_data=val_ds,
-    #                    epochs=25)
-    # print(ml.summary())
-    # loss, acc = ml.evaluate(test_ds)
-    # print(loss)
-    # print(acc)
-    # test_predictions = ml.predict(test_ds)
-    # print(test_predictions[:5])
-    # visualize(history)
-    # output_predictions(test, test_predictions)
+    for pred_dict, expec in zip(predictions, ytest):
+        for i in range(0, 5):
+            probability = pred_dict['probabilities'][i]
+            print('Prediction is "{}" ({:.1f}%), expected "{}"'.format(
+                label_cols_min[i], 100 * probability, expec))
 
 
-def run_low_level_model():
-    pass
+def run_dnn_estimator(feature_columns, train, ytrain, val, yval, test):
+    estimator = multi_label_estimator(feature_columns=feature_columns)
+    estimator.train(input_fn=lambda: input_fn(train, ytrain), steps=2000)
+    metrics = estimator.evaluate(input_fn=lambda: input_fn(val, yval, training=False))
+    print(metrics)
+
+    f1 = 2 * (metrics['precision/positive_threshold_0.5'] * metrics['recall/positive_threshold_0.5']) / (
+                metrics['precision/positive_threshold_0.5'] + metrics['recall/positive_threshold_0.5'])
+    print('F1 Score DNN: ')
+    print(f1)
+
+    predictions = estimator.predict(input_fn=lambda: input_predict_fn(test))
+    return predictions
+
+
+def run_custom_estimator(train, ytrain, val, yval, test):
+    multi_estimator = tf.estimator.Estimator(model_fn=multi_label_model_fn)
+    multi_estimator.train(input_fn=lambda: input_fn(train, ytrain))
+    metrics = multi_estimator.evaluate(input_fn=lambda: input_fn(val, yval, training=False))
+    print(metrics)
+
+    f1 = 2 * (metrics['precision/positive_threshold_0.5'] * metrics['recall/positive_threshold_0.5']) / (
+            metrics['precision/positive_threshold_0.5'] + metrics['recall/positive_threshold_0.5'])
+    print('F1 Score DNN: ')
+    print(f1)
+
+    predictions = multi_estimator.predict(input_fn=lambda: input_predict_fn(test))
+    return predictions
 
 
 def output_predictions(x, y):
     pass
 
 
-def visualize(history):
-    plotter = tfdocs.plots.HistoryPlotter(smoothing_std=2)
-    plotter.plot({'Basic': history}, metric="acc")
-    # plt.show()
-
-    plotter.plot({'Basic': history}, metric="loss")
-    # plt.show()
+def visualize():
+    pass
 
 
 def get_uncommon_tags(mood_array):
@@ -242,9 +171,57 @@ def get_uncommon_tags(mood_array):
     return mood_array.keys()
 
 
+def input_fn(data_df, label_df, training=True, batch_size=512):
+    dataset = tf.data.Dataset.from_tensor_slices((dict(data_df), label_df))
+    if training:
+        dataset = dataset.shuffle(1000).repeat()
+    return dataset.batch(batch_size)
+
+
+def input_predict_fn(features, batch_size=256):
+    """An input function for prediction."""
+    return tf.data.Dataset.from_tensor_slices(dict(features)).batch(batch_size)
+
+
+def multi_label_model_fn(features, labels, mode, config=None):
+    head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6])
+    feature_columns = []
+    for f in features:
+        feature_columns.append(tf.feature_column.numeric_column(f))
+        print(f)
+    print(feature_columns)
+    feature_layer = tf.keras.layers.DenseFeatures(feature_columns)
+    inputs = feature_layer(features)
+    print(inputs)
+
+    # comp logits
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
+    model.add(tf.keras.layers.Dense(128, activation='relu'))
+    model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+    model.add(tf.keras.layers.Dense(units=head.logits_dimension, activation=None))
+    logits = model(inputs)
+    return head.create_estimator_spec(
+        features=features,
+        labels=labels,
+        mode=mode,
+        logits=logits,
+        optimizer=tf.keras.optimizers.Adagrad(lr=0.1))
+
+
+def multi_label_estimator(feature_columns):
+    multi_head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6])
+    estimator = tf.estimator.DNNEstimator(
+        head=multi_head,
+        hidden_units=[1024, 512, 256],
+        feature_columns=feature_columns,
+        optimizer=tf.keras.optimizers.Adagrad(lr=0.1))
+    return estimator
+
+
 def main():
-    run_high_level_model()
-    # run_low_level_model()
+    data = load_file(PATH_TRUTH_HIGH_CLASS)
+    run_model(data)
 
 
 if __name__ == '__main__':

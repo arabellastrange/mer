@@ -20,7 +20,7 @@ PATH_PREDICTED_L_SVM = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predict
 PATH_PREDICTED_H_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_forest_class.csv'
 PATH_PREDICTED_L_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_forest_class.csv'
 
-label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
+label_cols_all = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
               'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
               'constant', 'contented', 'contrasting', 'cool', 'curious', 'dark', 'daze', 'deafening', 'deep',
               'dejected', 'delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
@@ -35,6 +35,11 @@ label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'biz
               'sexy', 'silent',
               'slow', 'snappy', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
               'traditional', 'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
+label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
+       'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
+       'heated', 'heavy', 'jazzy', 'loud', 'melancholy', 'mellow', 'mournful',
+       'passionate', 'quiet', 'relaxed', 'sad', 'serene', 'slow', 'soft',
+       'space', 'storming', 'upbeat', 'weird', 'wistful']
 
 
 def load_file(path):
@@ -42,7 +47,7 @@ def load_file(path):
 
 
 def process_data(data, flag='high'):
-    data = data.drop(columns=label_cols, errors='ignore')
+    data = data.drop(columns=label_cols_min, errors='ignore')
     data_mood = load_file(PATH_MOOD)
     data_mood['mood'] = data_mood['mood'].apply(ast.literal_eval)
 

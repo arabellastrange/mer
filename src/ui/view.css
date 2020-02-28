@@ -1,6 +1,38 @@
+a {
+    color: #fde51c;
+}
+
+a:hover,
+a:visited{
+    color: #eabc1b;
+}
+
 body{
     overflow-x: hidden;
     font-size: 1.5em;
+    color: #363535;
+    background: linear-gradient(45deg,  #0af3b3, #fde51c);
+    background-size: 600% 600%;
+
+    -webkit-animation: AnimationName 24s ease infinite;
+    -moz-animation: AnimationName 24s ease infinite;
+    animation: AnimationName 24s ease infinite;
+}
+
+@-webkit-keyframes AnimationName {
+     0%{background-position:0% 92%}
+     50%{background-position:100% 9%}
+     100%{background-position:0% 92%}
+ }
+@-moz-keyframes AnimationName {
+    0%{background-position:0% 92%}
+    50%{background-position:100% 9%}
+    100%{background-position:0% 92%}
+}
+@keyframes AnimationName {
+    0%{background-position:0% 92%}
+    50%{background-position:100% 9%}
+    100%{background-position:0% 92%}
 }
 
 .btn{
@@ -14,8 +46,15 @@ body{
     right: 1.1em;
 }
 
+.btn-raised{
+    background: #0af3b3;
+    border-radius: .3em;
+    color: #fff;
+    float: right;
+}
+
 .close {
-    color: #aaa;
+    color: #d2d0d0;
     font-size: 28px;
     font-weight: bold;
     float: right;
@@ -24,15 +63,16 @@ body{
 
 .close:hover,
 .close:focus {
-    color: black;
+    color: #363535;
     text-decoration: none;
     cursor: pointer;
 }
 
 footer{
     margin-top: 2%;
-    background: lightgrey;
+    background: #363535;
     padding: 0.5em;
+    color: #d2d0d0;
 }
 
 .form-check-label{
@@ -50,11 +90,16 @@ footer{
     font-size: 1.5em;
 }
 
+.modal-content {
+    border-radius: 1rem;
+}
+
 #playlist{
-    background-color: yellowgreen;
     margin: 0.5em;
     width: 30%;
     min-height: 20em;
+    font-size: 1em;
+    border-radius: 1em;
 }
 
 #playlist-gallery{
@@ -72,5 +117,10 @@ footer{
 .song-list{
     list-style-type: none;
     padding: 0.5em;
+}
+
+.song-label{
+    font-size: 0.9em;
+    font-weight: lighter;
 }
 
