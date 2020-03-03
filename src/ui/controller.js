@@ -1,4 +1,4 @@
-"use strict"
+"use strict";
 
 var cmodel = new model(),
     cview = new view(),
@@ -11,6 +11,7 @@ function controller() {
         cview.setOtherTagFunc();
         cview.generateSongListForm();
         cview.setUserAgreement();
+        onClientLoad();
     };
 
     this.initial = function () {

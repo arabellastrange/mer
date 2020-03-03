@@ -11,12 +11,12 @@ body{
     overflow-x: hidden;
     font-size: 1.5em;
     color: #363535;
-    background: linear-gradient(45deg,  #0af3b3, #fde51c);
+    background: linear-gradient(95deg,  #0af3b3, #fde51c, #00f7ff);
     background-size: 600% 600%;
 
-    -webkit-animation: AnimationName 24s ease infinite;
-    -moz-animation: AnimationName 24s ease infinite;
-    animation: AnimationName 24s ease infinite;
+    -webkit-animation: AnimationName 44s ease infinite;
+    -moz-animation: AnimationName 44s ease infinite;
+    animation: AnimationName 44s ease infinite;
 }
 
 @-webkit-keyframes AnimationName {
@@ -68,16 +68,43 @@ body{
     cursor: pointer;
 }
 
+.card-body {
+    padding: 2.25rem;
+}
+
+.card h3.card-title{
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
+.control-icon{
+    margin-right: 0.5em;
+}
+
 footer{
     margin-top: 2%;
+    color: #d2d0d0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+}
+
+.footer{
     background: #363535;
     padding: 0.5em;
-    color: #d2d0d0;
 }
 
 .form-check-label{
     font-weight: lighter;
     font-size: 1em;
+}
+
+.form-control{
+    font-size: 1em;
+}
+
+.custom-file-control, .form-control, .is-focused .custom-file-control, .is-focused .form-control {
+    background-image: linear-gradient(0deg, #0af3b3 2px,rgba(0,150,136,0) 0),linear-gradient(0deg,rgba(0,0,0,.26) 1px,transparent 0);
 }
 
 .logo-text{
@@ -94,12 +121,23 @@ footer{
     border-radius: 1rem;
 }
 
-#playlist{
-    margin: 0.5em;
-    width: 30%;
+.new-username{
+    font-weight: 500;
+    color: #00f7ff;
+}
+
+.playlist{
+    margin: 0.3em;
     min-height: 20em;
     font-size: 1em;
     border-radius: 1em;
+}
+
+.playlist-controls{
+    background-color: #00f7ff;
+    font-size: 2em;
+    color: white;
+    padding: 0.2em;
 }
 
 #playlist-gallery{
@@ -116,11 +154,14 @@ footer{
 
 .song-list{
     list-style-type: none;
-    padding: 0.5em;
 }
 
 .song-label{
     font-size: 0.9em;
     font-weight: lighter;
+}
+
+#song-icon {
+    margin: 0 1em;
 }
 
