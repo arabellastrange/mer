@@ -60,10 +60,9 @@ function check_user_name_already_exists($new_name, $conn)
     <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js"
             integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9"
             crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@v5.0.3/dist/amplitude.js"></script>
     <script src="https://apis.google.com/js/client.js" type="text/javascript"></script>
     <script src="https://kit.fontawesome.com/8f0a84e548.js" crossorigin="anonymous"></script>
-
+    <script src="https://www.youtube.com/iframe_api"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet"
@@ -79,39 +78,6 @@ function check_user_name_already_exists($new_name, $conn)
     <title>ML Playlist Generator</title>
 </head>
 <body>
-<!--<script src="https://sdk.scdn.co/spotify-player.js"></script>-->
-<!--<script>-->
-<!--    window.onSpotifyWebPlaybackSDKReady = () => {-->
-<!--        const token = 'BQCpu3XuDABpN33fOXtbAxEXO2Fg2cZFgfQ5ow4xCeaN-ivtG1qNS1o2DLXuiZoTLmoNctBpcy7-hlyfHlQuDP_b-2k6-FoPjWDN2Ac0pU88hHdVsyhOZ98ei301I5pxc-ftOZ2C4yn5PJfTvmuTCkrJOtshNxcUMyQODxMZIHc';-->
-<!--        const player = new Spotify.Player({-->
-<!--            name: 'Web Playback SDK Quick Start Player',-->
-<!--            getOAuthToken: cb => { cb(token); }-->
-<!--        });-->
-<!---->
-<!--        // Error handling-->
-<!--        player.addListener('initialization_error', ({ message }) => { console.error(message); });-->
-<!--        player.addListener('authentication_error', ({ message }) => { console.error(message); });-->
-<!--        player.addListener('account_error', ({ message }) => { console.error(message); });-->
-<!--        player.addListener('playback_error', ({ message }) => { console.error(message); });-->
-<!---->
-<!--        // Playback status updates-->
-<!--        player.addListener('player_state_changed', state => { console.log(state); });-->
-<!---->
-<!--        // Ready-->
-<!--        player.addListener('ready', ({ device_id }) => {-->
-<!--            console.log('Ready with Device ID', device_id);-->
-<!--        });-->
-<!---->
-<!--        // Not Ready-->
-<!--        player.addListener('not_ready', ({ device_id }) => {-->
-<!--            console.log('Device ID has gone offline', device_id);-->
-<!--        });-->
-<!---->
-<!--        // Connect to the player!-->
-<!--        player.connect();-->
-<!--    };-->
-<!--</script>-->
-
 <div class="row">
     <div class="logo-text col-md-12" id='logo-text'>
         <h1>MER-ML</h1>
@@ -325,17 +291,30 @@ function check_user_name_already_exists($new_name, $conn)
 
 </body>
 <footer>
-    <div class="row playlist-controls">
-        <div id="currentlyPlaying" class="col-md-12">
-            <div class="col-md-3 player-controls">
-                <i id="song-icon" class="fas fa-microphone"></i>
-                <i class="fas fa-backward control-icon" id="rewind-button"></i>
-                <i id="play-button" class="fas fa-play control-icon"></i>
-                <i id="pause-button" class="fas fa-pause control-icon"></i>
-                <i id="skip-button" class="fas fa-forward control-icon"></i>
+    <div class="row playlist-controls" id="playlist-controls">
+        <div class="col-md-12">
+            <div class="col-md-2" id="video-placeholder">
             </div>
-            <div class="col-md-6"></div>
-            <div class="col-md-3"></div>
+            <div id="player-controls" class="col-md-2 player-controls">
+                <i id="backBannerButton" class="fas fa-backward control-icon" onclick="(function(){
+                    player.previousVideo()
+                })(); return false;"></i>
+                <i id="playBannerButton" class="fas fa-play control-icon" onclick="(function() {
+                    player.playVideo()
+                })(); return false;"></i>
+                <i id="pauseBannerButton" class="fas fa-pause control-icon" onclick="(function() {
+                  player.pauseVideo()
+                })(); return false;"></i>
+                <i id="skipBannerButton" class="fas fa-forward control-icon" onclick="(function() {
+                  player.nextVideo()
+                })(); return false;"></i>
+            </div>
+            <div class="col-md-6">
+                <span id="current-song-title" class="current-song-title">Currently Playing: <span id="current-song"> default song</span></span>
+            </div>
+            <div class="col-md-2">
+                <button data-toggle="modal" data-target="#feedback"  data-whatever= ''><i class="fas fa-clipboard"></i></button>
+            </div>
         </div>
     </div>
 

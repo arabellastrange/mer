@@ -1,16 +1,16 @@
 "use strict";
 
-var childElement, appendChildElement;
+var childElement, appendChildElement, player;
 var all_playlists = new Map();
-var agreeButton = document.getElementById('agreeButton'),
-    submitProfileButton = document.getElementById('submit-profile'),
+var submitProfileButton = document.getElementById('submit-profile'),
     playlistGallery = document.getElementById('playlist-gallery'),
-    playButton = document.getElementById('playButton'),
     feedback = document.getElementById('feedback'),
     formRange = document.getElementById('form-range'),
     formTags = document.getElementById('formTags'),
     playBannerButton = document.getElementById('playBannerButton'),
     pauseBannerButton = document.getElementById('pauseBannerButton'),
+    playlistBanner = document.getElementById('playlist-controls'),
+    currentSong = document.getElementById('current-song'),
     otherEventButton = document.getElementById('inlineCheckboxOtherEvent'),
     otherTagButton = document.getElementById('inlineCheckboxOtherTag');
 
@@ -62,14 +62,38 @@ function view() {
 
 }
 
-function setPlayFunc() {
-    // for every play button on each playlist add listener
-    for (var i = 0; i < playButton.length; i++) {
-        playButton.item(i).addEventListener("click",
-            function (e) {
-                // do smth
-            });
+function setPlayFunc(buttonID) {
+    var playlistIndex = buttonID.substring(buttonID.indexOf('-'), buttonID.length);
+    var playlistYoutubeID = getPlaylistYoutubeId(playlistIndex);
+    player = new YT.Player('video-placeholder', {
+        width: '100%',
+        height: '100%',
+        listType: 'playlist',
+        list:  playlistYoutubeID,
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+
+    playlistBanner.style.display = 'block';
+    currentSong.innerHTML = all_playlists.get(playlistIndex).songs[player.getPlaylistIndex()];
+
+}
+
+function onPlayerReady(event) {
+    event.target.playVideo();
+}
+
+var done = false;
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.PLAYING && !done) {
+        setTimeout(stopVideo, 6000);
+        done = true;
     }
+}
+function stopVideo() {
+    player.stopVideo();
 }
 
 function generatePlaylists(playlists) {
@@ -83,7 +107,7 @@ function generatePlaylists(playlists) {
             html_play = html_play + song_format;
         }
         html_play = html_play + "</ul>";
-        appendChildElement.innerHTML = '<div id="playlist-' + i + '" class = "col-md-4"><div class="card playlist"><div class="card-body"><h3 class="card-title playlist-title">Playlist ' + i + '</h3><div class="card-text song-list"' + html_play + '</div></div><div class="row btn-row"><button id="startStopPlaylist" class=" btn amplitude-play-pause" data-amplitude-playlist="' + i + '" type="button">play/pause</button><button type="button" class="btn" id="feedbackButton" data-toggle="modal" data-target="#feedback"  data-whatever= ' + i + '> feedback </button></div></div></div>';
+        appendChildElement.innerHTML = '<div id="playlist-' + i + '" class = "col-md-4"><div class="card playlist"><div class="card-body"><h3 class="card-title playlist-title">Playlist ' + i + '</h3><div class="card-text song-list"' + html_play + '</div></div><div class="row btn-row"><button id="play-'+i+'"class="btn" type="button" onClick="setPlayFunc(this.id)"><i class="fas fa-play"></i></button><button type="button" class="btn" id="feedbackButton" data-toggle="modal" data-target="#feedback"  data-whatever= ' + i + '><i class="fas fa-clipboard"></i></button></div></div></div>';
 
     }
 }

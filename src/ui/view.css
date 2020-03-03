@@ -44,6 +44,11 @@ body{
     position: absolute;
     bottom: 0.1em;
     right: 1.1em;
+    font-size: 2em;
+}
+
+.btn-row button{
+    margin: 0.1em;
 }
 
 .btn-raised{
@@ -79,6 +84,12 @@ body{
 
 .control-icon{
     margin-right: 0.5em;
+}
+
+.current-song-title{
+    font-size: 1em;
+    opacity: 0.8;
+    color:  #d2d0d0;
 }
 
 footer{
@@ -134,10 +145,11 @@ footer{
 }
 
 .playlist-controls{
-    background-color: #00f7ff;
-    font-size: 2em;
-    color: white;
+    background-color: #363535;
+    font-size: 1.5em;
+    color: #fde51c;
     padding: 0.2em;
+    display: none;
 }
 
 #playlist-gallery{

@@ -20,6 +20,10 @@ function controller() {
 
 }
 
+function getPlaylistYoutubeId(index){
+    cmodel.getPlaylistID(index);
+}
+
 ccontroller = new controller();
 window.addEventListener("load", ccontroller.initial);
 console.log('started controller');

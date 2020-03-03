@@ -1,26 +1,16 @@
 "use strict";
 
 var songURLMap = new Map();
+var playlistURLMap = new Map();
 
 function model() {
     this.init = function () {
         $.getJSON('playlists.json', generatePlaylists);
     };
-}
 
-function get_spotify_url(query) {
-    var accessToken = 'bcc543d6f5564761ac2548ded2bdd20d';
-    var headers = new Headers();
-    var options = {
-        method: 'GET',
-        headers: {
-            Authorization: 'Bearer' + accessToken
-        }
-    };
-
-    fetch(query, options).then(
-        response => console.log(response)
-    );
+    this.getPlaylistID = function (index) {
+        return playlistURLMap.get(index);
+    }
 }
 
 function onClientLoad() {
@@ -31,57 +21,33 @@ function onClientLoad() {
 function onYouTubeApiLoad() {
     console.log('set key');
     gapi.client.setApiKey('AIzaSyBP9CxTGmOwsrV9DItzUnz9ZKLG6EVeImc');
-    $.getJSON('playlists.json', musicPlayerInit);
+
 }
 
-function musicPlayerInit(playlists) {
-    console.log('amplitude set up');
-    var songs = [];
-
-    Amplitude.init({
-        "songs": [],
-        "playlist": {},
-        "volume": 35,
-        "default_album_art": "/img/blue-grid.png",
-        "default_playlist_art": "/img/blue-grid.png"
-    });
-
-    for (var m = 0; m < playlists.length; m++) {
-        var playlist_key = 'playlist' + i;
-        var play_title = "{title: 'untitled playlist #" + i + "'}";
-        Amplitude.addPlaylist(playlist_key, play_title, []);
-        Amplitude.bindNewElements();
-    }
-
+function musicPlayerInit() {
     for (var i = 0; i < playlists.length; i++) {
         for (var n = 0; n < playlists[n].songs.length; n++) {
-            var playlist_key = 'playlist' + i;
-            var artist = playlists[i].songs[n].artist;
-            var song_title = playlists[i].songs[n].title;
-            var url = 'music/bensound-uklele.mp3';
-            var song_key = 'song-' + i + '-' + n;
-
-            // var spotify_query = 'https://api.spotify.com/v1/search?q=name:' + title.replace(' ', '%20') + '%20artist:' + artist.replace(' ', '%20') + '&type=track';
-            // var youtube_query = 'song+' + title + ' ' + artist;
-            // if(songURLMap.get(youtube_query)){
-            //     song.set('url', songURLMap.get(youtube_query));
-            // } else{
-            //     var youtube_url = searchYouTube(youtube_query);
-            //     song.set('url', youtube_url);
-            //     songURLMap.set(youtube_query, youtube_url);
-            // }
-
-            var song = "{'name': '" + song_title + "', 'artist': '" + artist + "', 'url': '" + url + "', 'made_up_key': '" + song_key + "'}";
-            Amplitude.addSongToPlaylist(song, playlist_key);
-            Amplitude.bindNewElements();
+            var youtube_query = 'song+' + title + ' ' + artist;
+            if(songURLMap.get(youtube_query)){
+                song.set('url', songURLMap.get(youtube_query));
+            } else{
+                var youtube_url = searchYouTube(youtube_query);
+                song.set('url', youtube_url);
+                songURLMap.set(youtube_query, youtube_url);
+            }
         }
     }
 
-    Amplitude.bindNewElements();
-    console.log(Amplitude.getConfig());
-
-
 }
+
+function createPlaylists(){
+    for (var i = 0; i < playlists.length; i++) {
+        // add songs to youtube playlist
+        // put new playlist id as
+        playlistURLMap.set(i, 'PLKLdE3o4nBsh7atlOsVxzEJ10Hj20dfuo');
+    }
+}
+
 
 function searchYouTube(query) {
     // Use the JavaScript client library to create a search.list() API call.
