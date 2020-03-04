@@ -117,10 +117,10 @@ def get_uncommon_tags(mood_array):
 
 
 def model_low_high_features():
-    data = load_file(PATH_TRUTH_LOW)
-    data = process_data(data, flag='low')
-    # data = load_file(PATH_TRUTH_LOW_CLASS)
-    # data['mood'] = data['mood'].apply(ast.literal_eval)
+    # data = load_file(PATH_TRUTH_LOW)
+    # data = process_data(data, flag='low')
+    data = load_file(PATH_TRUTH_LOW_CLASS)
+    data['mood'] = data['mood'].apply(ast.literal_eval)
     run_model(data)
 
 
@@ -155,7 +155,7 @@ def run_model(data):
 
 
 def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
-    classifier = RandomForestClassifier(max_depth=25, n_estimators=100)
+    classifier = RandomForestClassifier(max_depth=32, n_estimators=200)
     classifier.fit(x_train, y_train)
     # y_pred = get_best_tags(classifier, x_test, mlb)
     y_pred = classifier.predict(x_test)
@@ -170,13 +170,14 @@ def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
     # output
     df_out = pd.merge(data, y_pred_frame, left_index=True, right_index=True)
+
     # TODO CHANGE FILE FOR HIGH/LOW MODELS
-    output_predictions_to_file(df_out, PATH_PREDICTED_L_RFOR)
+    # output_predictions_to_file(df_out, PATH_PREDICTED_L_RFOR)
 
 
 def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
     # ml "RBF SVM"
-    classifier = OneVsRestClassifier(SVC(kernel='rbf', gamma=0.1, C=1))
+    classifier = OneVsRestClassifier(SVC(kernel='poly', gamma=0.1, C=1, degree=4))
     classifier.fit(x_train, y_train)
     y_pred = classifier.predict(x_test)
 
@@ -191,14 +192,11 @@ def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
     report = classification_report(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1))
     print(report)
 
-    print(y_pred_frame)
-    print(y_test)
-
     # merge on how='left' for all data, default for test data only
     df_out = pd.merge(data, y_pred_frame, left_index=True, right_index=True)
 
     # TODO PATH CHANGES
-    output_predictions_to_file(df_out, PATH_PREDICTED_L_SVM)
+    # output_predictions_to_file(df_out, PATH_PREDICTED_L_SVM)
 
 
 def output_predictions_to_file(data, file):

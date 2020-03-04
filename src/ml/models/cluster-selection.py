@@ -32,6 +32,11 @@ label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'biz
               'sexy','silent',
               'slow', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
               'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
+label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
+                  'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
+                  'heated', 'heavy', 'jazzy', 'loud', 'melancholy', 'mellow', 'mournful',
+                  'passionate', 'quiet', 'relaxed', 'sad', 'serene', 'slow', 'soft',
+                  'space', 'storming', 'upbeat', 'weird', 'wistful']
 
 
 def load_file(path):
@@ -41,7 +46,7 @@ def load_file(path):
 def cluster(data):
     print(data.head())
     kmeans = KMeans(n_clusters=20)
-    y = kmeans.fit_predict(data[label_cols])
+    y = kmeans.fit_predict(data[label_cols_min])
 
     data['Cluster'] = y
 
@@ -60,7 +65,6 @@ def select_songs(data):
 
 
 def main():
-    # predict valence from arousal in ground truth - example regessor
     data = load_file(PATH_PREDICTED_FOREST)
     data_id = load_file(PATH_ID)
     data = pd.merge(data, data_id[['artist', 'title', 'id']], on=['id'])
