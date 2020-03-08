@@ -32,7 +32,7 @@ if (isset($_COOKIE['username'])) {
     setcookie('username', $username, time() + (86400 * 7), "/"); //store for 7 days
 }
 
-setcookie('visited', $isVisited,  time() + (86400 * 7), "/"); //store for 7 days
+setcookie('visited', $isVisited, time() + (86400 * 7), "/"); //store for 7 days
 
 function check_user_name_already_exists($new_name, $conn)
 {
@@ -89,7 +89,7 @@ function check_user_name_already_exists($new_name, $conn)
     </div>
 </div>
 
-<?php if(!$isVisited) { ?>
+<?php if (!$isVisited) { ?>
     <div id="user-agreement" class="modal fade" role="dialog" aria-hidden="true" aria-labelledby="user">
         <div id="user-profile-box" class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
@@ -99,48 +99,65 @@ function check_user_name_already_exists($new_name, $conn)
                     </div>
                     <div class="col-md-2"></div>
                 </div>
-                <div class="modal-body">
-                    <p>This website collects your feedback and uses cookies to assign anonymized user IDs. By using this
-                        site you understand and consent to the collection of your questionnaire answers for the purpose of
-                        research at the University of Strathclyde. You understand that the information is collected for
-                        research purposes only and will not be used for any other purpose. You can begin a feedback session
-                        by clicking on the feedback button on every playlist and can skip any question with which you are
-                        uncomfortable and can further exist the session at any time. You are not obligated to complete this
-                        study, answer any particular question, or undertake any particular task which you do not wish to do.
-                        If you have completed a feedback session and wish to withdraw your data from the study, please
-                        contact <a href="chadha.degachi.2015@uni.strath.ac.uk">chadha.degachi.2015@uni.strath.ac.uk.</a></p>
+                <div class="profile-tab">
+                    <div class="modal-body">
+                        <p>This website collects your feedback and uses cookies to assign anonymized user IDs. By using
+                            this site you understand and consent to the collection of your questionnaire answers for the
+                            purpose of research at the University of Strathclyde. You understand that the information is
+                            collected
+                            for research purposes only and will not be used for any other purpose. You can begin a
+                            feedback
+                            session by clicking on the feedback button on every playlist and can skip any question with
+                            which
+                            you are uncomfortable and can further exist the session at any time. You are not obligated
+                            to
+                            complete this study, answer any particular question, or undertake any particular task which
+                            you do not
+                            wish to do. If you have completed a feedback session and wish to withdraw your data from the
+                            study,
+                            please contact <a href="chadha.degachi.2015@uni.strath.ac.uk">chadha.degachi.2015@uni.strath.ac.uk.</a>
+                        </p>
+                    </div>
                 </div>
-                <!-- <div class="modal-body step step-2" data-step="2">
-                    <form>
-                        <div class="form-group">
-                            <label id='selectMusicService' for="selectMusicServiceOptions" class="col-form-label">What
-                                services do you most often use to access music?</label>
-                            <select class="form-control" id="selectMusicServiceOptions">
-                                <option>Youtube</option>
-                                <option>Streaming Subscription (Spotfiy, Google Music, Tidal,...)</option>
-                                <option>Purchased - Digital (iTunes, Amazon,...)</option>
-                                <option>Purchased - Hard Media (CD, Vinyl,...)</option>
-                                <option>Radio</option>
-                            </select>
-                            <label id="selectMusicCollection" for="selectMusicCollectionOptions" class="col-form-label">
-                                How do you most often group your music collection?</label>
-                            <select class="form-control" id="selectMusicCollectionOptions">
-                                <option>By Artist</option>
-                                <option>By Album</option>
-                                <option>By Genre</option>
-                                <option>By Era</option>
-                                <option>By Theme</option>
-                                <option>By Activity</option>
-                            </select>
-                        </div>
-                    </form>
-                </div> -->
+
+                <div class="profile-tab">
+                    <div class="modal-body">
+                        <form id="user-profile" method="post" action="user-profile.php" onsubmit="return profileSubmission()">
+                            <div class="form-group">
+                                <label id='selectMusicService' for="selectMusicServiceOptions" class="col-form-label">What
+                                    services do you most often use to access music?</label>
+                                <select class="form-control mdb-select md-form" id="selectMusicServiceOptions"
+                                        name="music-purchase">
+                                    <option>Youtube</option>
+                                    <option>Streaming Subscription (Spotfiy, Google Music, Tidal,...)</option>
+                                    <option>Purchased - Digital (iTunes, Amazon,...)</option>
+                                    <option>Purchased - Hard Media (CD, Vinyl,...)</option>
+                                    <option>Radio</option>
+                                </select>
+                                <label id="selectMusicCollection" for="selectMusicCollectionOptions"
+                                       class="col-form-label">
+                                    How do you most often group your music collection?</label>
+                                <select class="form-control mdb-select md-form" id="selectMusicCollectionOptions"
+                                        name="music-collection">
+                                    <option>By Artist</option>
+                                    <option>By Album</option>
+                                    <option>By Genre</option>
+                                    <option>By Era</option>
+                                    <option>By Theme</option>
+                                    <option>By Activity</option>
+                                </select>
+                            </div>
+                            <input type="hidden" name="username" id="username" value="<?php echo $username; ?>">
+                        </form>
+                    </div>
+                </div>
+
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-raised btn-lg" id="agreeButton"
-                            data-dismiss="modal">Continue
+                    <button type="button" class="btn btn-raised btn-lg btn-light" id="p-prevBtn" onclick="nextPrevP(-1)">
+                        Back
                     </button>
-                    <!-- <button type="button" class="btn btn-primary" id="submit-profile">Submit
-                    </button> -->
+                    <button type="button" class="btn btn-raised btn-lg" id="p-nextBtn" onclick="nextPrevP(1)">Continue
+                    </button>
                 </div>
             </div>
         </div>
@@ -160,96 +177,124 @@ function check_user_name_already_exists($new_name, $conn)
                     </button>
                 </div>
             </div>
+
             <div class="modal-body">
                 <form id='user-feedback' action="form.php" method="post" onsubmit="return feedbackSubmission()">
-                    <div class="form-group">
-                        <label class="col-form-label">When would you listen to this playlist?</label>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxGym" name="event-op-gym"
-                                   value="true">
-                            <label class="form-check-label" for="inlineCheckboxGym">Gym</label>
+                    <div class="feedback-tab">
+                        <div class="form-group">
+                            <label class="col-form-label">What would you describe this playlist as?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxHappy" value="true"
+                                       name="happy-tag">
+                                <label class="form-check-label" for="inlineCheckboxHappy">Happy, Cheerful,
+                                    Upbeat</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxSad" value="true"
+                                       name="sad-tag">
+                                <label class="form-check-label" for="inlineCheckboxSad">Sad, Melancholy, Gloomy</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxRelax" value="true"
+                                       name="relax-tag">
+                                <label class="form-check-label" for="inlineCheckboxRelax">Slow, Relaxed, Chill</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxAngry"
+                                       name="angry-tag"
+                                       value="true">
+                                <label class="form-check-label" for="inlineCheckboxAngry">Angry, Fiery,
+                                    Passionate</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxOtherTag"
+                                       value="true" name="other-tag-op">
+                                <label class="form-check-label" for="inlineCheckboxOtherTag">Other</label>
+                            </div>
+                            <label class="col-form-label" for="otherTagInput">Other: </label>
+                            <input id='otherTagInput' name="other-tag-in" class="form-control" type="text" disabled>
                         </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxParty"
-                                   name="event-op-party" value="true">
-                            <label class="form-check-label" for="inlineCheckboxParty">Party</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxStudying"
-                                   name="event-op-study" value="true">
-                            <label class="form-check-label" for="inlineCheckboxStudying">Studying</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxRelaxing"
-                                   name="event-op-relax" value="true">
-                            <label class="form-check-label" for="inlineCheckboxRelaxing">Relaxing</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxCommute"
-                                   name="event-op-commute" value="true">
-                            <label class="form-check-label" for="inlineCheckboxCommute">Commute</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxOtherEvent"
-                                   value="true" name="event-op-other">
-                            <label class="form-check-label" for="inlineCheckboxOtherEvent">Other</label>
-                        </div>
-                        <label class="col-form-label" for="otherEventInput">Other: </label>
-                        <input id='otherEventInput' name="other-event-in" class="form-control" type="text" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label class="col-form-label">What would you describe this playlist as?</label>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxHappy" value="true"
-                                   name="happy-tag">
-                            <label class="form-check-label" for="inlineCheckboxHappy">Happy, Cheerful, Upbeat</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxSad" value="true"
-                                   name="sad-tag">
-                            <label class="form-check-label" for="inlineCheckboxSad">Sad, Melancholy, Gloomy</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxRelax" value="true"
-                                   name="relax-tag">
-                            <label class="form-check-label" for="inlineCheckboxRelax">Slow, Relaxed, Chill</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxAngry" name="angry-tag"
-                                   value="true">
-                            <label class="form-check-label" for="inlineCheckboxAngry">Angry, Fiery, Passionate</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckboxOtherTag"
-                                   value="true" name="other-tag-op">
-                            <label class="form-check-label" for="inlineCheckboxOtherTag">Other</label>
-                        </div>
-                        <label class="col-form-label" for="otherTagInput">Other: </label>
-                        <input id='otherTagInput' name="other-tag-in" class="form-control" type="text" disabled>
-                    </div>
-                    <div class="form-group">
-                        <label id='formTags' class="col-form-label">Would you describe this playlist as: {}?</label>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="agreeWithTags" id="agreeWithTags"
-                                   value="yes" required>
-                            <label class="form-check-label radio-label" for="agreeWithTags">Yes</label>
-                            <input class="form-check-input" type="radio" name="agreeWithTags" id="disagreeWithTags"
-                                   value="no" required>
-                            <label class="form-check-label radio-label" for="disagreeWithTags">No</label>
+                        <div class="form-group">
+                            <label class="col-form-label">When would you listen to this playlist?</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxGym"
+                                       name="event-op-gym"
+                                       value="true">
+                                <label class="form-check-label" for="inlineCheckboxGym">Gym</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxParty"
+                                       name="event-op-party" value="true">
+                                <label class="form-check-label" for="inlineCheckboxParty">Party</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxStudying"
+                                       name="event-op-study" value="true">
+                                <label class="form-check-label" for="inlineCheckboxStudying">Studying</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxRelaxing"
+                                       name="event-op-relax" value="true">
+                                <label class="form-check-label" for="inlineCheckboxRelaxing">Relaxing</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxCommute"
+                                       name="event-op-commute" value="true">
+                                <label class="form-check-label" for="inlineCheckboxCommute">Commute</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="inlineCheckboxOtherEvent"
+                                       value="true" name="event-op-other">
+                                <label class="form-check-label" for="inlineCheckboxOtherEvent">Other</label>
+                            </div>
+                            <label class="col-form-label" for="otherEventInput">Other: </label>
+                            <input id='otherEventInput' name="other-event-in" class="form-control" type="text" disabled>
                         </div>
                     </div>
-                    <div class='form-group'><label id='mlSliderQuestion' class='col-form-label'>How well do you think
-                            this song fits the overall mood of the playlist?</label>
-                        <div id="form-range">
+                    <div class="feedback-tab">
+                        <div class="form-group">
+                            <label id='formTags' class="col-form-label">This playlist has been labelled as {} do you
+                                agree?</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="agreeWithTags" id="agreeWithTags"
+                                       value="yes" required>
+                                <label class="form-check-label radio-label" for="agreeWithTags">Yes</label>
+                                <input class="form-check-input" type="radio" name="agreeWithTags" id="disagreeWithTags"
+                                       value="no" required>
+                                <label class="form-check-label radio-label" for="disagreeWithTags">No</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label id="" class="col-form-label">How cohesive do you think this playlist is?</label>
+                            <input type="range" name="cohesion" class="custom-range" min="1" max="5" step="1"
+                                   list="playlist-tickmarks">
+                            <datalist id='playlist-tickmarks'>
+                                <option value='1' label='1'></option>
+                                <option value='2'></option>
+                                <option value='3' label='3'></option>
+                                <option value='4'></option>
+                                <option value='5' label='5'></option>
+                            </datalist>
                         </div>
                     </div>
-                    <input type="hidden" name="username" id="username"
-                           value="<?php echo $username; ?>">
-                    <input type="submit" class="btn btn-raised btn-lg"/>
+                    <div class="feedback-tab">
+                        <div class='form-group'>
+                            <label id='mlSliderQuestion' class='col-form-label'>How well do you think
+                                this song fits the overall mood of the playlist?</label>
+                            <div id="form-range">
+                            </div>
+                        </div>
+                        <input type="hidden" name="username" id="username" value="<?php echo $username; ?>">
+                    </div>
                 </form>
             </div>
+
             <div class="modal-footer">
-                <!-- etc -->
+                <button type="button" class="btn btn-raised btn-lg btn-light" id="f-prevBtn" onclick="nextPrevF(-1)">Back
+                </button>
+                <button type="button" class="btn btn-raised btn-lg" id="f-nextBtn" onclick="nextPrevF(1)">Continue
+                </button>
             </div>
         </div>
     </div>
@@ -273,10 +318,9 @@ function check_user_name_already_exists($new_name, $conn)
                 </div>
                 <div class="modal-body">
                     <div class="col-md-12">
-                        <p>Your unique username is:<span class="new-username"><?php echo $username ?></span></p>
+                        <p>Your unique username is: <span class="new-username"><?php echo $username ?></span></p>
                         <p>Please keep track of your username, if you wish to withdraw your submissions you can do so by
-                            quoting
-                            this username and contacting the associated researchers.</p>
+                            quoting this username and contacting the associated researchers.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -313,7 +357,8 @@ function check_user_name_already_exists($new_name, $conn)
                 <span id="current-song-title" class="current-song-title">Currently Playing: <span id="current-song"> default song</span></span>
             </div>
             <div class="col-md-2">
-                <button data-toggle="modal" data-target="#feedback"  data-whatever= ''><i class="fas fa-clipboard"></i></button>
+                <button data-toggle="modal" data-target="#feedback" data-whatever=''><i class="fas fa-clipboard"></i>
+                </button>
             </div>
         </div>
     </div>

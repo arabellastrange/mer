@@ -6,16 +6,15 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 import json
 
-PATH_PREDICTED_SVM = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_svm_class.csv'
-PATH_PREDICTED_FOREST = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_forest_class.csv'
-PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_deep.csv'
+PATH_PREDICTED_SVM = 'I:\Science\CIS\wyb15135\datasets_created\predicted_svm_class.csv'
+PATH_PREDICTED_FOREST = 'I:\Science\CIS\wyb15135\datasets_created\predicted_forest_class.csv'
+PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep.csv'
 
-PATH_PREDICTED_LSVM = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_svm_class.csv'
-PATH_PREDICTED_LFOREST = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_forest_class.csv'
-PATH_PREDICTED_LDEEP = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_deep.csv'
+PATH_PREDICTED_LSVM = 'I:\Science\CIS\wyb15135\datasets_created\predicted_lsvm_class.csv'
+PATH_PREDICTED_LFOREST = 'I:\Science\CIS\wyb15135\datasets_created\predicted_lforest_class.csv'
+PATH_PREDICTED_LDEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_ldeep.csv'
 
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
-PATH_CLUSTERED = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_clustered.csv'
 
 label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
               'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
@@ -28,8 +27,8 @@ label_cols = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'biz
               'lively', 'loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
               'muted', 'odd', 'old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound',
               'quick',
-              'quiet', 'rapture', 'relaxed', 'repeated' ,'repetitive', 'rich', 'reticent', 'sad', 'scary', 'serene',
-              'sexy','silent',
+              'quiet', 'rapture', 'relaxed', 'repeated', 'repetitive', 'rich', 'reticent', 'sad', 'scary', 'serene',
+              'sexy', 'silent',
               'slow', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
               'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
 label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
@@ -65,45 +64,56 @@ def select_songs(data):
 
 
 def main():
-    data = load_file(PATH_PREDICTED_FOREST)
-    data_id = load_file(PATH_ID)
-    data = pd.merge(data, data_id[['artist', 'title', 'id']], on=['id'])
+    for file in [PATH_PREDICTED_FOREST, PATH_PREDICTED_SVM, PATH_PREDICTED_DEEP, PATH_PREDICTED_LDEEP,
+                 PATH_PREDICTED_LFOREST, PATH_PREDICTED_LSVM]:
+        data = load_file(file)
+        data_id = load_file(PATH_ID)
+        data = pd.merge(data, data_id[['artist', 'title', 'id']], on=['id'])
 
-    artist_encoder = LabelEncoder()
-    data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
-    title_encoder = LabelEncoder()
-    data['title'] = title_encoder.fit_transform(data['title'].astype(str))
+        artist_encoder = LabelEncoder()
+        data['artist'] = artist_encoder.fit_transform(data['artist'].astype(str))
+        title_encoder = LabelEncoder()
+        data['title'] = title_encoder.fit_transform(data['title'].astype(str))
 
-    data = cluster(data)
-    
-    data['artist'] = artist_encoder.inverse_transform(data['artist'])
-    data['title'] = title_encoder.inverse_transform(data['title'])
+        data = cluster(data)
 
-    print(data.head())
+        data['artist'] = artist_encoder.inverse_transform(data['artist'])
+        data['title'] = title_encoder.inverse_transform(data['title'])
 
-    data.to_csv(PATH_CLUSTERED, index=False)
+        print(data.head())
 
-    # Playlists
-    playlists_ds = []
-    for i in range(19):
-        playlists_ds.append(select_songs(data.loc[data['Cluster'] == i]))
+        PATH_CLUSTERED = file[:file.index('.')] + '_clustered.csv'
 
-    playlists = []
-    for playlist in playlists_ds:
-        songs = []
-        for i, row in playlist.iterrows():
-            tags = []
-            for l in label_cols:
-                if row[l] == 1:
-                    tags.append(l)
+        data.to_csv(PATH_CLUSTERED, index=False)
 
-            song = Song(artist=row['artist'], id=row['id'], title=row['title'], tags=tags)
-            songs.append(song)
-        p = Playlist(songs, 'forest')
-        playlists.append(p)
+        # Playlists
+        playlists_ds = []
+        for i in range(20):
+            playlists_ds.append(select_songs(data.loc[data['Cluster'] == i]))
 
-    with open("/ui/playlists.json", 'w') as outfile:
-        json.dump(playlists, outfile, cls=MusicEncoder)
+        # Random Playlist
+        playlists_ds.append(data.sample(n=8, replace=False))
+
+        playlists = []
+        for playlist in playlists_ds:
+            songs = []
+            for i, row in playlist.iterrows():
+                tags = []
+                for l in label_cols:
+                    if row[l] == 1:
+                        tags.append(l)
+
+                song = Song(artist=row['artist'], id=row['id'], title=row['title'], tags=tags)
+                songs.append(song)
+
+            # get model type from file name: file name format path/predicted_{model}.csv
+            model = file[51: file.index('.')]
+            p = Playlist(songs, model)
+            playlists.append(p)
+
+        PLAYLIST_PATH = "/ui/playlists_" + file[:file.index('.')] + '.json'
+        with open(PLAYLIST_PATH, 'w') as outfile:
+            json.dump(playlists, outfile, cls=MusicEncoder)
 
 
 class Playlist:

@@ -1,6 +1,6 @@
 import ast
-import numpy as np
 import pandas as pd
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.multiclass import OneVsRestClassifier
@@ -20,21 +20,9 @@ PATH_PREDICTED_L_SVM = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predict
 PATH_PREDICTED_H_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_forest_class.csv'
 PATH_PREDICTED_L_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_forest_class.csv'
 
-label_cols_all = ['airy', 'ambient', 'angry', 'animated', 'astonishing', 'big', 'bizarre', 'black', 'bleak', 'boisterous',
-              'boring', 'breezy', 'bright', 'buoyant', 'calm', 'cheerful', 'cheery', 'choral', 'comfortable', 'complex',
-              'constant', 'contented', 'contrasting', 'cool', 'curious', 'dark', 'daze', 'deafening', 'deep',
-              'dejected', 'delicate', 'delighted', 'despondent', 'different', 'difficult', 'dim', 'distinctive',
-              'dreamy', 'dull', 'earthy', 'easy', 'eccentric', 'ecstatic', 'ecstasy', 'eerie', 'elated', 'emphatic',
-              'encouraging',
-              'energetic', 'enveloping', 'extraordinary', 'familiar', 'fashionable', 'fast', 'fiery', 'flashy', 'fluid',
-              'funky', 'gray', 'happy', 'hard', 'harmonious', 'heated', 'heavy', 'hip', 'hopeful', 'jazzy', 'light',
-              'lively', 'loud', 'low', 'luminous', 'melancholy', 'mellow', 'mild', 'modish', 'monotonous', 'mournful',
-              'muted', 'odd', 'old', 'operatic', 'orchestral', 'passionate', 'peaceful', 'peculiar', 'profound',
-              'quick',
-              'quiet', 'rapture', 'relaxed', 'repeated', 'repetitive', 'rich', 'reticent', 'sad', 'scary', 'serene',
-              'sexy', 'silent',
-              'slow', 'snappy', 'soft', 'somber', 'soothing', 'space', 'storming', 'strange', 'sunny', 'sweet',
-              'traditional', 'trance', 'unconventional', 'upbeat', 'weighty', 'weird', 'wistful', 'zippy']
+PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data'
+PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data'
+
 label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
        'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
        'heated', 'heavy', 'jazzy', 'loud', 'melancholy', 'mellow', 'mournful',
@@ -102,14 +90,6 @@ def process_high_data(data):
     return data
 
 
-# modify prediction function to offset issues with sparse labels
-# assign only the tags with the highest confidence
-def get_best_tags(clf, X, lb, n_tags=3):
-    decfun = clf.decision_function(X)
-    best_tags = np.argsort(decfun)[:, :-(n_tags + 1): -1]
-    return lb.classes_[best_tags]
-
-
 def get_uncommon_tags(mood_array):
     mood_array = mood_array.apply(pd.Series).stack().value_counts()
     mood_array = mood_array[mood_array < 50]
@@ -117,19 +97,14 @@ def get_uncommon_tags(mood_array):
 
 
 def model_low_high_features():
-    # data = load_file(PATH_TRUTH_LOW)
-    # data = process_data(data, flag='low')
     data = load_file(PATH_TRUTH_LOW_CLASS)
     data['mood'] = data['mood'].apply(ast.literal_eval)
     run_model(data)
 
 
 def model_high_features():
-    # data = load_file(PATH_TRUTH_HIGH)
-    # data = process_data(data)
     data = load_file(PATH_TRUTH_HIGH_CLASS)
     data['mood'] = data['mood'].apply(ast.literal_eval)
-
     run_model(data)
 
 
@@ -155,9 +130,8 @@ def run_model(data):
 
 
 def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
-    classifier = RandomForestClassifier(max_depth=32, n_estimators=200)
+    classifier = RandomForestClassifier(max_depth=32, n_estimators=100, class_weight='balanced')
     classifier.fit(x_train, y_train)
-    # y_pred = get_best_tags(classifier, x_test, mlb)
     y_pred = classifier.predict(x_test)
 
     y_pred_frame = pd.DataFrame(y_pred, columns=mlb.classes_, index=d_test.index.copy())
@@ -168,6 +142,20 @@ def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
     report = classification_report(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1))
     print(report)
 
+    # Random control playlists
+    random_predictions = []
+    for i in range(0, 1068):
+        # gen 33 rand bin ints
+        bin_array = np.random.randint(0, 1, 33)
+        random_predictions.append(bin_array)
+
+    y_rand_frame = pd.DataFrame(random_predictions, columns=mlb.classes_, index=d_test.index.copy())
+    rand_score = f1_score(y_test.values.argmax(axis=1), y_rand_frame.values.argmax(axis=1), average='micro')
+    print('Rand Score Forest: ')
+    print(rand_score)
+    rand_report = classification_report(y_test.values.argmax(axis=1), y_rand_frame.values.argmax(axis=1))
+    print(rand_report)
+
     # output
     df_out = pd.merge(data, y_pred_frame, left_index=True, right_index=True)
 
@@ -177,13 +165,9 @@ def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
 def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
     # ml "RBF SVM"
-    classifier = OneVsRestClassifier(SVC(kernel='poly', gamma=0.1, C=1, degree=4))
+    classifier = OneVsRestClassifier(SVC(kernel='poly', gamma=0.1, C=1, degree=4, class_weight='balanced'))
     classifier.fit(x_train, y_train)
     y_pred = classifier.predict(x_test)
-
-    # flatten y predicted data frames to array
-    # c_matrix = multilabel_confusion_matrix(y_test.values, y_pred_frame.values)
-    # print(c_matrix)
 
     y_pred_frame = pd.DataFrame(y_pred, columns=mlb.classes_, index=d_test.index.copy())
     score = f1_score(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1), average='micro')
@@ -191,6 +175,20 @@ def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
     print(score)
     report = classification_report(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1))
     print(report)
+
+    # Random control playlists
+    random_predictions = []
+    for i in range(0, 1068):
+        # gen 33 rand bin ints
+        bin_array = np.random.randint(0, 1, 33)
+        random_predictions.append(bin_array)
+
+    y_rand_frame = pd.DataFrame(random_predictions, columns=mlb.classes_, index=d_test.index.copy())
+    rand_score = f1_score(y_test.values.argmax(axis=1), y_rand_frame.values.argmax(axis=1), average='micro')
+    print('Rand Score SVM: ')
+    print(rand_score)
+    rand_report = classification_report(y_test.values.argmax(axis=1), y_rand_frame.values.argmax(axis=1))
+    print(rand_report)
 
     # merge on how='left' for all data, default for test data only
     df_out = pd.merge(data, y_pred_frame, left_index=True, right_index=True)

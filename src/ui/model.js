@@ -73,13 +73,28 @@ function feedbackSubmission() {
     $.ajax({
         type: 'POST',
         url: 'form.php',
-        data: $('#user-feedback').serialize(),
+        data: $('#user-feedback').serializeArray(),
         success: function (response) {
-            console.log('Yay: ' + response)
+            console.log(response)
         }
     });
-    // should move to view
+
     $('#feedback').modal('hide');
+
+    return false;
+}
+
+function profileSubmission() {
+    $.ajax({
+        type: 'POST',
+        url: 'user-profile.php',
+        data: $('#user-profile').serializeArray(),
+        success: function (response) {
+            console.log(response)
+        }
+    });
+
+    $('#user-agreement').modal('hide');
 
     if ($('#new-username').length > 0) {
         $('#new-username').modal('show');

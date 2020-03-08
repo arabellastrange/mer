@@ -1,6 +1,7 @@
 import ast
 
 import tensorflow as tf
+from tensorflow import keras
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.preprocessing import LabelEncoder
@@ -16,11 +17,25 @@ PATH_TRUTH_HIGH_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_c
 PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
 PATH_TRUTH_LOW_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_low_min_class.csv'
 
+PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data'
+PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data'
+
 label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
                   'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
                   'heated', 'heavy', 'jazzy', 'loud', 'melancholy', 'mellow', 'mournful',
                   'passionate', 'quiet', 'relaxed', 'sad', 'serene', 'slow', 'soft',
                   'space', 'storming', 'upbeat', 'weird', 'wistful']
+
+METRICS = [
+      keras.metrics.TruePositives(name='tp'),
+      keras.metrics.FalsePositives(name='fp'),
+      keras.metrics.TrueNegatives(name='tn'),
+      keras.metrics.FalseNegatives(name='fn'),
+      keras.metrics.BinaryAccuracy(name='accuracy'),
+      keras.metrics.Precision(name='precision'),
+      keras.metrics.Recall(name='recall'),
+      keras.metrics.AUC(name='auc'),
+]
 
 
 def load_file(path):
@@ -126,14 +141,40 @@ def run_model(data):
                 label_cols_min[i], 100 * probability, expec))
 
 
+def run_keras_model(feature_columns, train, ytrain, val, yval, test):
+    model = make_model(train_features=feature_columns)
+    print(model.summary())
+    model.predict(test)
+
+
+def make_model(metrics=METRICS, output_bias=None, train_features=[]):
+    if output_bias is not None:
+        output_bias = tf.keras.initializers.Constant(output_bias)
+    model = keras.Sequential([
+        keras.layers.Dense(
+            16, activation='relu',
+            input_shape=(train_features.shape[-1],)),
+        keras.layers.Dropout(0.5),
+        keras.layers.Dense(1, activation='sigmoid',
+                           bias_initializer=output_bias),
+    ])
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(lr=1e-3),
+        loss=keras.losses.BinaryCrossentropy(),
+        metrics=metrics)
+
+    return model
+
+
 def run_dnn_estimator(feature_columns, train, ytrain, val, yval, test):
     estimator = multi_label_estimator(feature_columns=feature_columns)
     estimator.train(input_fn=lambda: input_fn(train, ytrain), steps=2000)
     metrics = estimator.evaluate(input_fn=lambda: input_fn(val, yval, training=False))
     print(metrics)
 
-    f1 = 2 * (metrics['precision/positive_threshold_0.5'] * metrics['recall/positive_threshold_0.5']) / (
-                metrics['precision/positive_threshold_0.5'] + metrics['recall/positive_threshold_0.5'])
+    f1 = 2 * ((metrics['precision/positive_threshold_0.4'] * metrics['recall/positive_threshold_0.4']) / (
+                metrics['precision/positive_threshold_0.4'] + metrics['recall/positive_threshold_0.4']))
     print('F1 Score DNN: ')
     print(f1)
 
@@ -184,7 +225,7 @@ def input_predict_fn(features, batch_size=256):
 
 
 def multi_label_model_fn(features, labels, mode, config=None):
-    head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6])
+    head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6, 0.7])
     feature_columns = []
     for f in features:
         feature_columns.append(tf.feature_column.numeric_column(f))
@@ -210,7 +251,7 @@ def multi_label_model_fn(features, labels, mode, config=None):
 
 
 def multi_label_estimator(feature_columns):
-    multi_head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6])
+    multi_head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6, 0.7])
     estimator = tf.estimator.DNNEstimator(
         head=multi_head,
         hidden_units=[1024, 512, 256],
