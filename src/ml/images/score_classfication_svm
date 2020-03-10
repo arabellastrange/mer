@@ -1,3 +1,6 @@
+low lvl
+
+
 Score SVM:
 0.29775280898876405
 
@@ -112,3 +115,124 @@ Rand Score Forest:
     accuracy                           0.12      1068
    macro avg       0.01      0.06      0.01      1068
 weighted avg       0.02      0.12      0.03      1068
+
+
+high lvl
+
+C:\Users\User\Anaconda3\python.exe C:/Users/User/PycharmProjects/merml/src/ml/models/support-vector-multilabel.py
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1439: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples.
+Score SVM:
+  'recall', 'true', average, warn_for)
+0.31121495327102805
+              precision    recall  f1-score   support
+
+           0       0.30      0.57      0.40       137
+           1       0.50      0.52      0.51       197
+           2       0.33      0.29      0.31       179
+           3       0.00      0.00      0.00         6
+           4       0.31      0.30      0.30       178
+           6       0.00      0.00      0.00         4
+          10       0.23      0.15      0.18        48
+          12       0.18      0.15      0.17        13
+          13       0.00      0.00      0.00         8
+          15       0.23      0.15      0.18       203
+          16       0.40      0.22      0.29        18
+          17       0.33      0.21      0.26        19
+          18       0.00      0.00      0.00         0
+          19       0.00      0.00      0.00         6
+          22       0.00      0.00      0.00        15
+          23       0.00      0.00      0.00         0
+          24       0.00      0.00      0.00         2
+          26       0.00      0.00      0.00        25
+          27       0.00      0.00      0.00         4
+          30       0.00      0.00      0.00         0
+          31       0.14      0.12      0.13         8
+
+    accuracy                           0.31      1070
+   macro avg       0.14      0.13      0.13      1070
+weighted avg       0.31      0.31      0.30      1070
+
+Rand Score SVM:
+0.1280373831775701
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+              precision    recall  f1-score   support
+
+           0       0.13      1.00      0.23       137
+           1       0.00      0.00      0.00       197
+           2       0.00      0.00      0.00       179
+           3       0.00      0.00      0.00         6
+           4       0.00      0.00      0.00       178
+           6       0.00      0.00      0.00         4
+          10       0.00      0.00      0.00        48
+          12       0.00      0.00      0.00        13
+          13       0.00      0.00      0.00         8
+          15       0.00      0.00      0.00       203
+          16       0.00      0.00      0.00        18
+          17       0.00      0.00      0.00        19
+          19       0.00      0.00      0.00         6
+          22       0.00      0.00      0.00        15
+          24       0.00      0.00      0.00         2
+          26       0.00      0.00      0.00        25
+          27       0.00      0.00      0.00         4
+          31       0.00      0.00      0.00         8
+
+    accuracy                           0.13      1070
+   macro avg       0.01      0.06      0.01      1070
+weighted avg       0.02      0.13      0.03      1070
+
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+Score Forest:
+  'precision', 'predicted', average, warn_for)
+0.22803738317757008
+              precision    recall  f1-score   support
+
+           0       0.14      0.91      0.25       137
+           1       0.78      0.37      0.50       197
+           2       0.70      0.04      0.07       179
+           3       0.00      0.00      0.00         6
+           4       0.63      0.16      0.26       178
+           6       0.00      0.00      0.00         4
+          10       0.00      0.00      0.00        48
+          12       0.67      0.15      0.25        13
+          13       0.00      0.00      0.00         8
+          15       0.25      0.00      0.01       203
+          16       0.40      0.11      0.17        18
+          17       0.50      0.05      0.10        19
+          19       0.00      0.00      0.00         6
+          22       0.17      0.07      0.10        15
+          24       0.00      0.00      0.00         2
+          26       0.20      0.12      0.15        25
+          27       0.00      0.00      0.00         4
+          31       0.25      0.12      0.17         8
+
+    accuracy                           0.23      1070
+   macro avg       0.26      0.12      0.11      1070
+weighted avg       0.46      0.23      0.20      1070
+
+Rand Score Forest:
+0.1280373831775701
+              precision    recall  f1-score   support
+
+           0       0.13      1.00      0.23       137
+           1       0.00      0.00      0.00       197
+           2       0.00      0.00      0.00       179
+           3       0.00      0.00      0.00         6
+           4       0.00      0.00      0.00       178
+           6       0.00      0.00      0.00         4
+          10       0.00      0.00      0.00        48
+          12       0.00      0.00      0.00        13
+          13       0.00      0.00      0.00         8
+          15       0.00      0.00      0.00       203
+          16       0.00      0.00      0.00        18
+          17       0.00      0.00      0.00        19
+          19       0.00      0.00      0.00         6
+          22       0.00      0.00      0.00        15
+          24       0.00      0.00      0.00         2
+          26       0.00      0.00      0.00        25
+          27       0.00      0.00      0.00         4
+          31       0.00      0.00      0.00         8
+
+    accuracy                           0.13      1070
+   macro avg       0.01      0.06      0.01      1070
+weighted avg       0.02      0.13      0.03      1070

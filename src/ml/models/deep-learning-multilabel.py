@@ -1,11 +1,14 @@
 import ast
-
+import tensorflow_docs as tfdocs
+import tensorflow_docs.plots
+import tensorflow_docs.modeling
 import tensorflow as tf
 from tensorflow import keras
 import pandas as pd
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score, classification_report, recall_score, precision_score
 
 PATH_MOOD = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
 
@@ -17,8 +20,8 @@ PATH_TRUTH_HIGH_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_c
 PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
 PATH_TRUTH_LOW_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_low_min_class.csv'
 
-PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data'
-PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data'
+PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data.csv'
+PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data.csv'
 
 label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
                   'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
@@ -40,6 +43,10 @@ METRICS = [
 
 def load_file(path):
     return pd.read_csv(path)
+
+
+def norm(x, train_stats):
+    return (x - train_stats['mean']) / train_stats['std']
 
 
 def df_to_dataset(data, shuffle=True, batch_size=512):
@@ -108,6 +115,7 @@ def process_low_data(data):
 
 
 def run_model(data):
+    # pre-process
     mlb = MultiLabelBinarizer()
     data['mood'] = data['mood'].apply(ast.literal_eval)
     data_m = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
@@ -115,47 +123,93 @@ def run_model(data):
     print(data_m.columns)
     dataset = data.drop(columns=['id'])
 
+    # split
     train, test = train_test_split(dataset, test_size=0.3)
     train, val = train_test_split(train, test_size=0.3)
     print(len(train), 'train examples')
     print(len(val), 'validation examples')
     print(len(test), 'test examples')
 
+    # labels
     ytrain = train[label_cols_min]
     yval = val[label_cols_min]
+    ytest = test[label_cols_min]
+
+    # features
     train = train.drop(columns=label_cols_min)
     val = val.drop(columns=label_cols_min)
-    ytest = test[label_cols_min]
     test = test.drop(columns=label_cols_min)
 
     feature_columns = []
     for feature in train.keys():
         feature_columns.append(tf.feature_column.numeric_column(key=feature))
 
-    predictions = run_dnn_estimator(feature_columns, train, ytrain, val, yval, test)
+    # TODO normalise
+    # Normalise
+    train_stats = train.describe()
+    train_stats = train_stats.transpose()
 
-    for pred_dict, expec in zip(predictions, ytest):
-        for i in range(0, 5):
-            probability = pred_dict['probabilities'][i]
-            print('Prediction is "{}" ({:.1f}%), expected "{}"'.format(
-                label_cols_min[i], 100 * probability, expec))
+    normed_train = norm(train, train_stats)
+    normed_test = norm(test, train_stats)
+
+    # Build, run and predict on model
+    # e_predictions = run_dnn_estimator(feature_columns, train, ytrain, val, yval, test)
+    k_predictions = run_keras_model(train, ytrain, test, ytest, normed_train, normed_test)
+
+    for val in [0.4, 0.5, 0.6]:
+        pred = k_predictions.copy()
+
+        pred[pred >= val] = 1
+        pred[pred < val] = 0
+
+        precision = precision_score(ytest, pred, average='micro')
+        recall = recall_score(ytest, pred, average='micro')
+        f1 = f1_score(ytest, pred, average='micro')
+        report = classification_report(ytest, pred)
+
+        print("Micro-average quality numbers")
+        print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
+        print(report)
+
+    # for pred_dict, expec in zip(e_predictions, ytest):
+    #     for i in range(0, 5):
+    #         probability = pred_dict['probabilities'][i]
+    #         print('Prediction is "{}" ({:.1f}%), expected "{}"'.format(
+    #             label_cols_min[i], 100 * probability, expec))
 
 
-def run_keras_model(feature_columns, train, ytrain, val, yval, test):
-    model = make_model(train_features=feature_columns)
+def run_keras_model(train, ytrain, test, ytest, normed_train, normed_test):
+    model = make_model(train_features=train)
     print(model.summary())
-    model.predict(test)
+
+    # Train
+    EPOCHS = 1000
+    history = model.fit(
+        normed_train, ytrain,
+        epochs=EPOCHS,
+        validation_split=0.2,
+        verbose=0,
+        class_weight='balanced',
+        callbacks=[tfdocs.modeling.EpochDots()])
+
+    # Score
+    loss, mae, mse = model.evaluate(normed_test, ytest, verbose=2)
+    print("Testing set Mean Abs Error: {:5.2f} Valence".format(mae))
+
+    return model.predict(test)
 
 
 def make_model(metrics=METRICS, output_bias=None, train_features=[]):
     if output_bias is not None:
         output_bias = tf.keras.initializers.Constant(output_bias)
+
     model = keras.Sequential([
-        keras.layers.Dense(
-            16, activation='relu',
-            input_shape=(train_features.shape[-1],)),
+        keras.layers.Dense(64, activation='relu',input_shape=(len(train_features.keys()))),
         keras.layers.Dropout(0.5),
-        keras.layers.Dense(1, activation='sigmoid',
+        keras.layers.Dense(64, activation='relu'),
+        keras.layers.Dropout(0.5),
+        # 33 possible output labels
+        keras.layers.Dense(33, activation='sigmoid',
                            bias_initializer=output_bias),
     ])
 

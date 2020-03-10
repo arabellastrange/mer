@@ -20,8 +20,13 @@ PATH_PREDICTED_L_SVM = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predict
 PATH_PREDICTED_H_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_forest_class.csv'
 PATH_PREDICTED_L_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_forest_class.csv'
 
-PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data'
-PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data'
+PATH_PREDICTED_HAB_SVM = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_svm_class_ab.csv'
+PATH_PREDICTED_LAB_SVM = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_svm_class_ab.csv'
+PATH_PREDICTED_HAB_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_forest_class_ab.csv'
+PATH_PREDICTED_LAB_RFOR = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_forest_class_ab.csv'
+
+PATH_HTEST = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_ftest_data.csv'
+PATH_LTEST= 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_ftest_data.csv'
 
 label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
        'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
@@ -36,13 +41,15 @@ def load_file(path):
 
 def process_data(data, flag='high'):
     data = data.drop(columns=label_cols_min, errors='ignore')
-    data_mood = load_file(PATH_MOOD)
-    data_mood['mood'] = data_mood['mood'].apply(ast.literal_eval)
+#    data_mood = load_file(PATH_MOOD)
+#    data_mood['mood'] = data_mood['mood'].apply(ast.literal_eval)
 
-    data = pd.merge(data, data_mood[['mood', 'title', 'artist']], on=['title', 'artist'])
+ #   data = pd.merge(data, data_mood[['mood', 'title', 'artist']], on=['title', 'artist'])
+
     data.drop(
         columns=['metadata.tags.musicbrainz_recordingid', 'metadata.tags.artist', 'metadata.tags.title',
-                 'metadata.tags.album', 'title', 'artist', 'fallback-id'], inplace=True, errors='ignore')
+                 'metadata.tags.album', 'title', 'artist', 'fallback-id', 'metadata.audio_properties.length',
+                 'metadata.audio_properties.replay_gain'], inplace=True, errors='ignore')
 
     # drop uncommon mood tags
     for i, row in data.iterrows():
@@ -59,7 +66,7 @@ def process_data(data, flag='high'):
         data = process_low_data(data)
 
     # TODO CHANGE PATH
-    data.to_csv(PATH_TRUTH_LOW_CLASS, index=False)
+    data.to_csv(PATH_TRUTH_HIGH_CLASS, index=False)
     return data
 
 
@@ -90,6 +97,15 @@ def process_high_data(data):
     return data
 
 
+def process_test_data(data):
+    data.drop(columns=['metadata.tags.artist', 'metadata.tags.title',
+                       'metadata.tags.album', 'metadata.audio_properties.length',
+                       'metadata.audio_properties.replay_gain'], inplace=True, errors='ignore')
+    data.dropna()
+
+    return data
+
+
 def get_uncommon_tags(mood_array):
     mood_array = mood_array.apply(pd.Series).stack().value_counts()
     mood_array = mood_array[mood_array < 50]
@@ -98,24 +114,35 @@ def get_uncommon_tags(mood_array):
 
 def model_low_high_features():
     data = load_file(PATH_TRUTH_LOW_CLASS)
+    test_data = load_file(PATH_LTEST)
+    h_data = process_test_data(load_file(PATH_HTEST))
+
+    test_data = pd.merge(test_data, h_data, on=['metadata.tags.musicbrainz_recordingid'])
+
+    test_data = process_test_data(test_data)
+    test_data = process_low_data(test_data)
+
     data['mood'] = data['mood'].apply(ast.literal_eval)
-    run_model(data)
+    run_model(data, test_data)
 
 
 def model_high_features():
     data = load_file(PATH_TRUTH_HIGH_CLASS)
     data['mood'] = data['mood'].apply(ast.literal_eval)
-    run_model(data)
+
+    test_data = load_file(PATH_HTEST)
+    test_data = process_test_data(test_data)
+
+    run_model(data, test_data)
 
 
-def run_model(data):
+def run_model(data, test_data):
     # one-hot encoding mood classes
     mlb = MultiLabelBinarizer()
     Y = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
     X = data.drop(columns=['id'])
 
-    # scale x
-    # X = StandardScaler().fit_transform(X)
+    ab_test = test_data.drop(columns=['metadata.tags.musicbrainz_recordingid'])
 
     # split dataset
     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.40, random_state=19)
@@ -124,17 +151,21 @@ def run_model(data):
     sc_x = StandardScaler()
     s_x_train = sc_x.fit_transform(x_train)
     s_x_test = sc_x.fit_transform(x_test)
+    s_ab_test = sc_x.fit_transform(ab_test)
 
-    svm_model(data, s_x_train, y_train, s_x_test, y_test, x_test, mlb)
-    rand_forest_model(data, x_train, y_train, x_test, y_test, x_test, mlb)
+    svm_model(data, s_x_train, y_train, s_x_test, y_test, x_test, mlb, s_ab_test, test_data)
+    rand_forest_model(data, x_train, y_train, x_test, y_test, x_test, mlb, s_ab_test, test_data)
 
 
-def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
+def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb, s_ab_test, ab_test):
     classifier = RandomForestClassifier(max_depth=32, n_estimators=100, class_weight='balanced')
     classifier.fit(x_train, y_train)
     y_pred = classifier.predict(x_test)
 
+    test_pred = classifier.predict(s_ab_test)
+
     y_pred_frame = pd.DataFrame(y_pred, columns=mlb.classes_, index=d_test.index.copy())
+    test_pred_frame = pd.DataFrame(test_pred, columns=mlb.classes_, index=ab_test.index.copy())
 
     score = f1_score(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1), average='micro')
     print('Score Forest: ')
@@ -144,7 +175,7 @@ def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
     # Random control playlists
     random_predictions = []
-    for i in range(0, 1068):
+    for i in range(0, 1070):
         # gen 33 rand bin ints
         bin_array = np.random.randint(0, 1, 33)
         random_predictions.append(bin_array)
@@ -158,18 +189,24 @@ def rand_forest_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
     # output
     df_out = pd.merge(data, y_pred_frame, left_index=True, right_index=True)
+    test_out = pd.merge(ab_test, test_pred_frame, left_index=True, right_index=True)
 
     # TODO CHANGE FILE FOR HIGH/LOW MODELS
-    # output_predictions_to_file(df_out, PATH_PREDICTED_L_RFOR)
+    output_predictions_to_file(df_out, PATH_PREDICTED_H_RFOR)
+    output_predictions_to_file(test_out, PATH_PREDICTED_HAB_RFOR)
 
 
-def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
+def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb, s_ab_test, ab_test):
     # ml "RBF SVM"
     classifier = OneVsRestClassifier(SVC(kernel='poly', gamma=0.1, C=1, degree=4, class_weight='balanced'))
     classifier.fit(x_train, y_train)
+
     y_pred = classifier.predict(x_test)
+    test_pred = classifier.predict(s_ab_test)
 
     y_pred_frame = pd.DataFrame(y_pred, columns=mlb.classes_, index=d_test.index.copy())
+    test_pred_frame = pd.DataFrame(test_pred, columns=mlb.classes_, index=ab_test.index.copy())
+
     score = f1_score(y_test.values.argmax(axis=1), y_pred_frame.values.argmax(axis=1), average='micro')
     print('Score SVM: ')
     print(score)
@@ -178,7 +215,7 @@ def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
     # Random control playlists
     random_predictions = []
-    for i in range(0, 1068):
+    for i in range(0, 1070):
         # gen 33 rand bin ints
         bin_array = np.random.randint(0, 1, 33)
         random_predictions.append(bin_array)
@@ -192,9 +229,11 @@ def svm_model(data, x_train, y_train, x_test, y_test, d_test, mlb):
 
     # merge on how='left' for all data, default for test data only
     df_out = pd.merge(data, y_pred_frame, left_index=True, right_index=True)
+    test_out = pd.merge(ab_test, test_pred_frame, left_index=True, right_index=True)
 
     # TODO PATH CHANGES
-    # output_predictions_to_file(df_out, PATH_PREDICTED_L_SVM)
+    output_predictions_to_file(df_out, PATH_PREDICTED_H_SVM)
+    output_predictions_to_file(test_out, PATH_PREDICTED_HAB_SVM)
 
 
 def output_predictions_to_file(data, file):
@@ -202,8 +241,8 @@ def output_predictions_to_file(data, file):
 
 
 def main():
-    # model_high_features()
-    model_low_high_features()
+    model_high_features()
+    # model_low_high_features()
 
 
 if __name__ == '__main__':

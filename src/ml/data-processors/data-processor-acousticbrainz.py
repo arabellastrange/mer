@@ -171,6 +171,11 @@ PATH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_audio_class.csv'
 PATH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_audio_class.csv'
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
 
+PATH_HIGH_TEST = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data.csv'
+PATH_LOW_TEST = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data.csv'
+PATH_HIGH_FTEST = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_ftest_data.csv'
+PATH_LOW_FTEST = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_ftest_data.csv'
+
 PATH_TRUTH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
 
@@ -196,14 +201,8 @@ def load_file(path):
 
 
 def fetch_low_audio_data_for_truth(ground_truth, lowlvl_data):
-    lowlvl_data = drop_extra_stats(lowlvl_data)
-    lowlvl_data = drop_extra_information(lowlvl_data)
-    lowlvl_data = lowlvl_data.drop(columns=drop_cols, errors='ignore')
-    lowlvl_data = drop_performer_info(lowlvl_data)
-    lowlvl_data = format_array_types(lowlvl_data)
-    lowlvl_data = lowlvl_data.reset_index(drop=True)
-    lowlvl_data = flatten_band_info(lowlvl_data)
-    labelled = pd.merge(ground_truth.astype(str), lowlvl_data.astype(str), left_on=['id'],
+    data = format_low_audio_data(lowlvl_data)
+    labelled = pd.merge(ground_truth.astype(str), data.astype(str), left_on=['id'],
                         right_on=['metadata.tags.musicbrainz_recordingid'])
     return labelled
 
@@ -233,6 +232,17 @@ def flatten_band_info(data):
     return data
 
 
+def format_low_audio_data(data):
+    lowlvl_data = drop_extra_stats(data)
+    lowlvl_data = drop_extra_information(lowlvl_data)
+    lowlvl_data = lowlvl_data.drop(columns=drop_cols, errors='ignore')
+    lowlvl_data = drop_performer_info(lowlvl_data)
+    lowlvl_data = format_array_types(lowlvl_data)
+    lowlvl_data = lowlvl_data.reset_index(drop=True)
+    lowlvl_data = flatten_band_info(lowlvl_data)
+    return lowlvl_data
+
+
 def format_audio_data(data):
     data = drop_mood_information(data)
     data = data.drop_duplicates()
@@ -257,7 +267,7 @@ def format_array_types(data):
 
 
 def drop_mood_information(data):
-    data = data.drop(columns=mood_columns)
+    data = data.drop(columns=mood_columns, errors='ignore')
     return data
 
 
@@ -285,24 +295,35 @@ def drop_extra_information(data):
 
 def main():
     # input
-    high_audio = load_file(PATH_HIGH)
-    low_audio = load_file(PATH_LOW)
-    data_id = load_file(PATH_ID)
+    # high_audio = load_file(PATH_HIGH)
+    # low_audio = load_file(PATH_LOW)
+    # data_id = load_file(PATH_ID)
 
     # ground_truth_high = fetch_high_audio_data_for_truth(data_id, high_audio)
     # ground_truth_low = fetch_low_audio_data_for_truth(data_id, low_audio)
-
-    high = load_file(PATH_TRUTH_HIGH)
-    low = load_file(PATH_TRUTH_LOW)
-    ground_truth_low = pd.merge(high, low, on=['id'])
+    #
+    # high = load_file(PATH_TRUTH_HIGH)
+    # low = load_file(PATH_TRUTH_LOW)
+    # ground_truth_low = pd.merge(high, low, on=['id'])
 
     # possibly weird merging side effect causing lots to empty columns at the end
-    unnamed_cols = [c for c in ground_truth_low.columns if 'Unnamed' in c]
-    ground_truth_low = ground_truth_low.drop(columns=unnamed_cols)
+    # unnamed_cols = [c for c in ground_truth_low.columns if 'Unnamed' in c]
+    # ground_truth_low = ground_truth_low.drop(columns=unnamed_cols)
 
     # output
     # ground_truth_high.to_csv(PATH_TRUTH_HIGH, index=False)
-    ground_truth_low.to_csv(PATH_TRUTH_LOW, index=False)
+    # ground_truth_low.to_csv(PATH_TRUTH_LOW, index=False)
+
+    high_test = load_file(PATH_HIGH_FTEST)
+    low_test = load_file(PATH_LOW_TEST)
+
+    # high_test = format_audio_data(high_test)
+    # high_test.drop_duplicates()
+    # high_test.to_csv(PATH_HIGH_FTEST, index=False)
+
+    low_test = format_audio_data(low_test)
+    low_test = format_low_audio_data(low_test)
+    low_test.to_csv(PATH_LOW_FTEST, index=False)
 
 
 if __name__ == '__main__':

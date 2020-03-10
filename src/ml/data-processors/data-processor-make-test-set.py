@@ -6,8 +6,8 @@ from pandas.io.json import json_normalize
 PATH_HAUDIO = 'I:\Science\CIS\wyb15135\datasets_unmodified\\acousticbrainz-highlevel-json-20150130\highlevel\\0\\00'
 PATH_LAUDIO = 'I:\Science\CIS\wyb15135\datasets_unmodified\\acousticbrainz-lowlevel-json-20150129\lowlevel\\0\\00'
 
-PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data'
-PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data'
+PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data.csv'
+PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data.csv'
 
 
 def read_json_directory(path):
