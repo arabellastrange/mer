@@ -332,37 +332,25 @@ function check_user_name_already_exists($new_name, $conn)
     </div>
 <?php } ?>
 
+<div id="playlist-player" class="modal fade player" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="col-md-10"></div>
+                <div class="col-md-2">
+                    <button type="button" data-dismiss="modal" id="close-username" class="btn close"
+                            aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="iframe-box"></div>
+        </div>
+    </div>
+</div>
 
 </body>
 <footer>
-    <div class="row playlist-controls" id="playlist-controls">
-        <div class="col-md-12">
-            <div class="col-md-2" id="video-placeholder">
-            </div>
-            <div id="player-controls" class="col-md-2 player-controls">
-                <i id="backBannerButton" class="fas fa-backward control-icon" onclick="(function(){
-                    player.previousVideo()
-                })(); return false;"></i>
-                <i id="playBannerButton" class="fas fa-play control-icon" onclick="(function() {
-                    player.playVideo()
-                })(); return false;"></i>
-                <i id="pauseBannerButton" class="fas fa-pause control-icon" onclick="(function() {
-                  player.pauseVideo()
-                })(); return false;"></i>
-                <i id="skipBannerButton" class="fas fa-forward control-icon" onclick="(function() {
-                  player.nextVideo()
-                })(); return false;"></i>
-            </div>
-            <div class="col-md-6">
-                <span id="current-song-title" class="current-song-title">Currently Playing: <span id="current-song"> default song</span></span>
-            </div>
-            <div class="col-md-2">
-                <button data-toggle="modal" data-target="#feedback" data-whatever=''><i class="fas fa-clipboard"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div class="row footer">
         <div class="col-md-1"></div>
         <div class="col-md-10">

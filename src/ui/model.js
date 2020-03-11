@@ -1,16 +1,22 @@
 "use strict";
 
 var songURLMap = new Map();
-var playlistURLMap = new Map();
+var collatedPlaylist = [];
+var allModels = ['playlists_deep_class.json', "playlists_forest_class.json", "playlists_lforest_class.json",
+    'playlists_svm_class.json', "playlists_lsvm_class.json"];
+
 
 function model() {
     this.init = function () {
         $.getJSON('playlists.json', generatePlaylists);
+
+        // for (var i = 0; i < allModels.length; i++){
+        //     $.getJSON(allModels[i], function (playlists) {
+        //         createPlaylist(playlists)
+        //     });
+        // }
     };
 
-    this.getPlaylistID = function (index) {
-        return playlistURLMap.get(index);
-    }
 }
 
 function onClientLoad() {
@@ -40,34 +46,6 @@ function musicPlayerInit() {
 
 }
 
-function createPlaylists(){
-    for (var i = 0; i < playlists.length; i++) {
-        // add songs to youtube playlist
-        // put new playlist id as
-        playlistURLMap.set(i, 'PLKLdE3o4nBsh7atlOsVxzEJ10Hj20dfuo');
-    }
-}
-
-
-function searchYouTube(query) {
-    // Use the JavaScript client library to create a search.list() API call.
-    var request = gapi.client.youtube.search.list({
-        part: 'snippet',
-        q: encodeURIComponent(query).replace(/%20/g, "+"),
-        order: 'viewCount'
-    });
-    // Send the request to the API server, call the onSearchResponse function when the data is returned
-    request.execute(onSearchResponse);
-}
-
-function onSearchResponse(response) {
-    var responseString = JSON.stringify(response, '', 2);
-    var results = response.results;
-    $.each(results.items, function (index, item) {
-        console.log(item);
-    });
-    console.log(responseString)
-}
 
 function feedbackSubmission() {
     $.ajax({
@@ -82,6 +60,50 @@ function feedbackSubmission() {
     $('#feedback').modal('hide');
 
     return false;
+}
+
+function createPlaylist(playlists) {
+    console.log('creating');
+    var possible_playlists = [];
+    var rand_playlists = [];
+
+    for (var i = 0; i < playlists.length; i++) {
+        var playlist = playlists[i];
+        if(playlist.random === true){
+            rand_playlists.push(playlist)
+        } else {
+            var song_tags = [];
+            playlist.songs.forEach(s => song_tags.push(s.tags));
+
+            if(song_tags.length > 0){
+                possible_playlists.push(playlist)
+            }
+        }
+    }
+
+    var rand_int_p_1 = Math.floor(Math.random() * possible_playlists.length);
+    collatedPlaylist.push(possible_playlists[rand_int_p_1]);
+
+    var rand_int_p_2 = Math.floor(Math.random() * possible_playlists.length);
+    if (rand_int_p_1 !== rand_int_p_2){
+        collatedPlaylist.push(possible_playlists[rand_int_p_2]);
+    } else{
+        rand_int_p_2 = Math.floor(Math.random() * possible_playlists.length);
+        collatedPlaylist.push(possible_playlists[rand_int_p_2]);
+    }
+
+    var rand_int_r =  Math.floor(Math.random() * rand_playlists.length);
+    collatedPlaylist.push(rand_playlists[rand_int_r]);
+
+    console.log(collatedPlaylist);
+
+}
+
+
+function readPlaylists() {
+    console.log('reading');
+    console.log(collatedPlaylist);
+    generatePlaylists(collatedPlaylist);
 }
 
 function profileSubmission() {

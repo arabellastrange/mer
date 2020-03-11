@@ -10,6 +10,7 @@ function controller() {
         cview.setOtherEventFunc();
         cview.setOtherTagFunc();
         cview.generateSongListForm();
+        cview.generatePlayIFrame();
         cview.setUserAgreement();
         onClientLoad();
     };
