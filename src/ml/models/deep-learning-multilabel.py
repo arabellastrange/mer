@@ -12,16 +12,18 @@ from sklearn.metrics import f1_score, classification_report, recall_score, preci
 
 PATH_MOOD = 'I:\Science\CIS\wyb15135\datasets_created\datasets_created_ground_truth.csv'
 
-PATH_PREDICTED_H_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_predicted_deep_class.csv'
-PATH_PREDICTED_L_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_predicted_deep_class.csv'
+PATH_PREDICTED_H_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep_class.csv'
+PATH_PREDICTED_L_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep_class.csv'
+PATH_PREDICTED_HAB_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep_class_ab.csv'
+PATH_PREDICTED_LAB_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_ldeep_class_ab.csv'
 
 PATH_TRUTH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_TRUTH_HIGH_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_min_class.csv'
 PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
 PATH_TRUTH_LOW_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_low_min_class.csv'
 
-PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_test_data.csv'
-PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_test_data.csv'
+PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_ftest_data.csv'
+PATH_LTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\low_lvl_ftest_data.csv'
 
 label_cols_min = ['ambient', 'angry', 'breezy', 'calm', 'cheerful', 'contented', 'dark',
                   'delighted', 'ecstatic', 'elated', 'fast', 'fiery', 'funky', 'happy',
@@ -114,13 +116,22 @@ def process_low_data(data):
     return data
 
 
+def process_test_data(data):
+    data.drop(columns=['metadata.tags.artist', 'metadata.tags.title',
+                       'metadata.tags.album', 'metadata.audio_properties.length',
+                       'metadata.audio_properties.replay_gain'], inplace=True, errors='ignore')
+    data.dropna()
+
+    return data
+
+
 def run_model(data):
     # pre-process
     mlb = MultiLabelBinarizer()
     data['mood'] = data['mood'].apply(ast.literal_eval)
     data_m = pd.DataFrame(mlb.fit_transform(data.pop('mood')), columns=mlb.classes_, index=data.index)
     data = data.join(data_m)
-    print(data_m.columns)
+
     dataset = data.drop(columns=['id'])
 
     # split
@@ -144,46 +155,58 @@ def run_model(data):
     for feature in train.keys():
         feature_columns.append(tf.feature_column.numeric_column(key=feature))
 
-    # TODO normalise
     # Normalise
     train_stats = train.describe()
     train_stats = train_stats.transpose()
-
     normed_train = norm(train, train_stats)
     normed_test = norm(test, train_stats)
 
     # Build, run and predict on model
-    # e_predictions = run_dnn_estimator(feature_columns, train, ytrain, val, yval, test)
-    k_predictions = run_keras_model(train, ytrain, test, ytest, normed_train, normed_test)
+    e_predictions = run_dnn_estimator(feature_columns, train, ytrain, val, yval, test)
+    # k_predictions = run_keras_model(train, ytrain, test, ytest, normed_train, normed_test)
+    # pred3 = []
+    #
+    # for val in [0.3, 0.4, 0.5]:
+    #     pred = k_predictions.copy()
+    #
+    #     pred[pred >= val] = 1
+    #     pred[pred < val] = 0
+    #
+    #     precision = precision_score(ytest, pred, average='micro')
+    #     recall = recall_score(ytest, pred, average='micro')
+    #     f1 = f1_score(ytest, pred, average='micro')
+    #     report = classification_report(ytest, pred)
+    #
+    #     if val == 0.3:
+    #         pred3 = pred
+    #
+    #     print("Micro-average quality numbers")
+    #     print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
+    #     print(report)
+    #
+    # pred_frame = pd.DataFrame(pred3, columns=mlb.classes_, index=test.index.copy())
+    # df_out = pd.merge(test, pred_frame, left_index=True, right_index=True)
+    # df_out = pd.merge(data['id'], df_out, left_index=True, right_index=True)
+    #
+    # output_predictions(df_out, PATH_PREDICTED_L_DEEP)
 
-    for val in [0.4, 0.5, 0.6]:
-        pred = k_predictions.copy()
+    for pred_dict, expec in zip(e_predictions, ytest):
+        for i in range(0, 5):
+            probability = pred_dict['probabilities'][i]
+            print('Prediction is "{}" ({:.1f}%), expected "{}"'.format(
+                label_cols_min[i], 100 * probability, expec))
 
-        pred[pred >= val] = 1
-        pred[pred < val] = 0
-
-        precision = precision_score(ytest, pred, average='micro')
-        recall = recall_score(ytest, pred, average='micro')
-        f1 = f1_score(ytest, pred, average='micro')
-        report = classification_report(ytest, pred)
-
-        print("Micro-average quality numbers")
-        print("Precision: {:.4f}, Recall: {:.4f}, F1-measure: {:.4f}".format(precision, recall, f1))
-        print(report)
-
-    # for pred_dict, expec in zip(e_predictions, ytest):
-    #     for i in range(0, 5):
-    #         probability = pred_dict['probabilities'][i]
-    #         print('Prediction is "{}" ({:.1f}%), expected "{}"'.format(
-    #             label_cols_min[i], 100 * probability, expec))
+    out_pred = next(e_predictions)
+    print(out_pred)
 
 
 def run_keras_model(train, ytrain, test, ytest, normed_train, normed_test):
-    model = make_model(train_features=train)
+    model = make_model(METRICS, train)
     print(model.summary())
 
     # Train
-    EPOCHS = 1000
+    EPOCHS = 500
+
     history = model.fit(
         normed_train, ytrain,
         epochs=EPOCHS,
@@ -193,24 +216,20 @@ def run_keras_model(train, ytrain, test, ytest, normed_train, normed_test):
         callbacks=[tfdocs.modeling.EpochDots()])
 
     # Score
-    loss, mae, mse = model.evaluate(normed_test, ytest, verbose=2)
-    print("Testing set Mean Abs Error: {:5.2f} Valence".format(mae))
+    m_eval = model.evaluate(normed_test, ytest, verbose=2)
+    print("Metrics: ")
+    print(m_eval)
 
     return model.predict(test)
 
 
-def make_model(metrics=METRICS, output_bias=None, train_features=[]):
-    if output_bias is not None:
-        output_bias = tf.keras.initializers.Constant(output_bias)
+def make_model(metrics, train):
 
     model = keras.Sequential([
-        keras.layers.Dense(64, activation='relu',input_shape=(len(train_features.keys()))),
-        keras.layers.Dropout(0.5),
-        keras.layers.Dense(64, activation='relu'),
+        keras.layers.Dense(64, activation='relu', input_shape=[len(train.keys())]),
         keras.layers.Dropout(0.5),
         # 33 possible output labels
-        keras.layers.Dense(33, activation='sigmoid',
-                           bias_initializer=output_bias),
+        keras.layers.Dense(33, activation='sigmoid'),
     ])
 
     model.compile(
@@ -223,7 +242,7 @@ def make_model(metrics=METRICS, output_bias=None, train_features=[]):
 
 def run_dnn_estimator(feature_columns, train, ytrain, val, yval, test):
     estimator = multi_label_estimator(feature_columns=feature_columns)
-    estimator.train(input_fn=lambda: input_fn(train, ytrain), steps=2000)
+    estimator.train(input_fn=lambda: input_fn(train, ytrain), steps=500)
     metrics = estimator.evaluate(input_fn=lambda: input_fn(val, yval, training=False))
     print(metrics)
 
@@ -251,8 +270,8 @@ def run_custom_estimator(train, ytrain, val, yval, test):
     return predictions
 
 
-def output_predictions(x, y):
-    pass
+def output_predictions(data, file):
+    data.to_csv(file, index=False)
 
 
 def visualize():
@@ -292,7 +311,6 @@ def multi_label_model_fn(features, labels, mode, config=None):
     # comp logits
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Dense(128, activation='relu'))
-    model.add(tf.keras.layers.Dense(128, activation='relu'))
     model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
     model.add(tf.keras.layers.Dense(units=head.logits_dimension, activation=None))
     logits = model(inputs)
@@ -308,14 +326,15 @@ def multi_label_estimator(feature_columns):
     multi_head = tf.estimator.MultiLabelHead(n_classes=33, thresholds=[0.4, 0.5, 0.6, 0.7])
     estimator = tf.estimator.DNNEstimator(
         head=multi_head,
-        hidden_units=[1024, 512, 256],
+        hidden_units=[512, 256, 128],
         feature_columns=feature_columns,
         optimizer=tf.keras.optimizers.Adagrad(lr=0.1))
     return estimator
 
 
 def main():
-    data = load_file(PATH_TRUTH_HIGH_CLASS)
+    # data = load_file(PATH_TRUTH_HIGH_CLASS)
+    data = load_file(PATH_TRUTH_LOW_CLASS)
     run_model(data)
 
 

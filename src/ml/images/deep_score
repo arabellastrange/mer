@@ -1,0 +1,214 @@
+C:\Users\User\Anaconda3\python.exe C:/Users/User/PycharmProjects/merml/src/ml/models/deep-learning-multilabel.py
+2020-03-10 21:17:48.474119: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX AVX2
+2020-03-10 21:17:48.479227: I tensorflow/core/common_runtime/process_util.cc:147] Creating new thread pool with default inter op setting: 2. Tune using inter_op_parallelism_threads for best performance.
+1309 train examples
+562 validation examples
+803 test examples
+Model: "sequential"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #
+=================================================================
+dense (Dense)                (None, 64)                3392
+_________________________________________________________________
+dropout (Dropout)            (None, 64)                0
+_________________________________________________________________
+dense_1 (Dense)              (None, 33)                2145
+=================================================================
+Total params: 5,537
+Trainable params: 5,537
+Non-trainable params: 0
+_________________________________________________________________
+None
+
+Epoch: 0, accuracy:0.6247,  auc:0.5059,  fn:3092.0000,  fp:9874.0000,  loss:0.6683,  precision:0.1335,  recall:0.3297,  tn:20064.0000,  tp:1521.0000,  val_accuracy:0.7872,  val_auc:0.5315,  val_fn:1031.0000,  val_fp:809.0000,  val_loss:0.5274,  val_precision:0.1599,  val_recall:0.1300,  val_tn:6652.0000,  val_tp:154.0000,
+....................................................................................................
+Epoch: 100, accuracy:0.8905,  auc:0.8887,  fn:3099.0000,  fp:684.0000,  loss:0.2589,  precision:0.6888,  recall:0.3282,  tn:29254.0000,  tp:1514.0000,  val_accuracy:0.8738,  val_auc:0.8481,  val_fn:918.0000,  val_fp:173.0000,  val_loss:0.3028,  val_precision:0.6068,  val_recall:0.2253,  val_tn:7288.0000,  val_tp:267.0000,
+....................................................................................................803/803 - 0s - loss: 0.3716 - tp: 862.0000 - fp: 629.0000 - tn: 22265.0000 - fn: 2743.0000 - accuracy: 0.8728 - precision: 0.5781 - recall: 0.2391 - auc: 0.8105
+Metics:
+[0.37163873462198976, 862.0, 629.0, 22265.0, 2743.0, 0.87275004, 0.5781355, 0.23911235, 0.81045026]
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+Micro-average quality numbers
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in samples with no predicted labels.
+Precision: 0.2482, Recall: 0.6510, F1-measure: 0.3594
+  'precision', 'predicted', average, warn_for)
+              precision    recall  f1-score   support
+
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1439: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in samples with no true labels.
+           0       0.50      0.02      0.04       109
+  'recall', 'true', average, warn_for)
+           1       0.54      0.58      0.56       162
+           2       0.21      0.91      0.34       135
+           3       0.21      0.91      0.34       143
+           4       0.22      0.93      0.36       136
+           5       0.21      0.95      0.34       136
+           6       0.00      0.00      0.00        19
+           7       0.22      0.92      0.35       136
+           8       0.21      0.95      0.34       136
+           9       0.22      0.94      0.36       136
+          10       0.00      0.00      0.00        44
+          11       0.55      0.58      0.57       162
+          12       0.00      0.00      0.00        16
+          13       0.21      0.93      0.35       138
+          14       0.55      0.57      0.56       162
+          15       0.27      0.50      0.35       162
+          16       0.00      0.00      0.00        25
+          17       0.00      0.00      0.00        55
+          18       0.22      0.71      0.34       143
+          19       0.22      0.93      0.35       152
+          20       0.22      0.71      0.33       142
+          21       0.56      0.53      0.55       162
+          22       0.50      0.02      0.04        51
+          23       0.22      0.87      0.35       137
+          24       0.24      0.58      0.34       149
+          25       0.22      0.84      0.34       135
+          26       0.78      0.15      0.25        96
+          27       1.00      0.02      0.03        57
+          28       0.00      0.00      0.00        13
+          29       0.53      0.59      0.56       162
+          30       0.00      0.00      0.00        17
+          31       0.00      0.00      0.00        35
+          32       0.22      0.73      0.33       142
+
+   micro avg       0.25      0.65      0.36      3605
+   macro avg       0.27      0.50      0.26      3605
+weighted avg       0.32      0.65      0.35      3605
+ samples avg       0.26      0.56      0.34      3605
+
+Micro-average quality numbers
+Precision: 0.3568, Recall: 0.1831, F1-measure: 0.2420
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00       109
+           1       0.63      0.16      0.26       162
+           2       0.20      0.07      0.10       135
+           3       0.00      0.00      0.00       143
+           4       0.35      0.55      0.43       136
+           5       0.30      0.66      0.42       136
+           6       0.00      0.00      0.00        19
+           7       0.36      0.55      0.43       136
+           8       0.31      0.64      0.42       136
+           9       0.33      0.58      0.42       136
+          10       0.00      0.00      0.00        44
+          11       0.68      0.15      0.25       162
+          12       0.00      0.00      0.00        16
+          13       0.33      0.57      0.41       138
+          14       0.63      0.16      0.26       162
+          15       0.00      0.00      0.00       162
+          16       0.00      0.00      0.00        25
+          17       0.00      0.00      0.00        55
+          18       1.00      0.01      0.03       143
+          19       0.25      0.14      0.18       152
+          20       1.00      0.01      0.03       142
+          21       0.68      0.13      0.22       162
+          22       0.00      0.00      0.00        51
+          23       0.31      0.04      0.07       137
+          24       1.00      0.01      0.01       149
+          25       0.31      0.03      0.05       135
+          26       0.00      0.00      0.00        96
+          27       0.00      0.00      0.00        57
+          28       0.00      0.00      0.00        13
+          29       0.60      0.19      0.29       162
+          30       0.00      0.00      0.00        17
+          31       0.00      0.00      0.00        35
+          32       0.50      0.01      0.03       142
+
+   micro avg       0.36      0.18      0.24      3605
+   macro avg       0.30      0.14      0.13      3605
+weighted avg       0.40      0.18      0.17      3605
+ samples avg       0.16      0.14      0.15      3605
+
+Micro-average quality numbers
+Precision: 0.6062, Recall: 0.0325, F1-measure: 0.0616
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00       109
+           1       1.00      0.01      0.01       162
+           2       0.00      0.00      0.00       135
+           3       0.00      0.00      0.00       143
+           4       0.64      0.12      0.20       136
+           5       0.55      0.18      0.27       136
+           6       0.00      0.00      0.00        19
+           7       0.64      0.12      0.20       136
+           8       0.56      0.18      0.27       136
+           9       0.63      0.12      0.21       136
+          10       0.00      0.00      0.00        44
+          11       1.00      0.01      0.01       162
+          12       0.00      0.00      0.00        16
+          13       0.64      0.12      0.20       138
+          14       1.00      0.01      0.01       162
+          15       0.00      0.00      0.00       162
+          16       0.00      0.00      0.00        25
+          17       0.00      0.00      0.00        55
+          18       0.00      0.00      0.00       143
+          19       0.00      0.00      0.00       152
+          20       0.00      0.00      0.00       142
+          21       0.00      0.00      0.00       162
+          22       0.00      0.00      0.00        51
+          23       0.00      0.00      0.00       137
+          24       0.00      0.00      0.00       149
+          25       0.00      0.00      0.00       135
+          26       0.00      0.00      0.00        96
+          27       0.00      0.00      0.00        57
+          28       0.00      0.00      0.00        13
+          29       1.00      0.01      0.01       162
+          30       0.00      0.00      0.00        17
+          31       0.00      0.00      0.00        35
+          32       0.00      0.00      0.00       142
+
+   micro avg       0.61      0.03      0.06      3605
+   macro avg       0.23      0.03      0.04      3605
+weighted avg       0.32      0.03      0.05      3605
+ samples avg       0.03      0.02      0.03      3605
+
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 due to no predicted samples.
+  'precision', 'predicted', average, warn_for)
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 due to no predicted samples.
+  'precision', 'predicted', average, warn_for)
+C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 due to no predicted samples.
+  'precision', 'predicted', average, warn_for)
+Micro-average quality numbers
+Precision: 0.0000, Recall: 0.0000, F1-measure: 0.0000
+              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00       109
+           1       0.00      0.00      0.00       162
+           2       0.00      0.00      0.00       135
+           3       0.00      0.00      0.00       143
+           4       0.00      0.00      0.00       136
+           5       0.00      0.00      0.00       136
+           6       0.00      0.00      0.00        19
+           7       0.00      0.00      0.00       136
+           8       0.00      0.00      0.00       136
+           9       0.00      0.00      0.00       136
+          10       0.00      0.00      0.00        44
+          11       0.00      0.00      0.00       162
+          12       0.00      0.00      0.00        16
+          13       0.00      0.00      0.00       138
+          14       0.00      0.00      0.00       162
+          15       0.00      0.00      0.00       162
+          16       0.00      0.00      0.00        25
+          17       0.00      0.00      0.00        55
+          18       0.00      0.00      0.00       143
+          19       0.00      0.00      0.00       152
+          20       0.00      0.00      0.00       142
+          21       0.00      0.00      0.00       162
+          22       0.00      0.00      0.00        51
+          23       0.00      0.00      0.00       137
+          24       0.00      0.00      0.00       149
+          25       0.00      0.00      0.00       135
+          26       0.00      0.00      0.00        96
+          27       0.00      0.00      0.00        57
+          28       0.00      0.00      0.00        13
+          29       0.00      0.00      0.00       162
+          30       0.00      0.00      0.00        17
+          31       0.00      0.00      0.00        35
+          32       0.00      0.00      0.00       142
+
+   micro avg       0.00      0.00      0.00      3605
+   macro avg       0.00      0.00      0.00      3605
+weighted avg       0.00      0.00      0.00      3605
+ samples avg       0.00      0.00      0.00      3605
+
+
+Process finished with exit code 0

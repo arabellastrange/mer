@@ -8,11 +8,11 @@ import json
 
 PATH_PREDICTED_SVM = 'I:\Science\CIS\wyb15135\datasets_created\predicted_svm_class.csv'
 PATH_PREDICTED_FOREST = 'I:\Science\CIS\wyb15135\datasets_created\predicted_forest_class.csv'
-PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep.csv'
+PATH_PREDICTED_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep_class.csv'
 
 PATH_PREDICTED_LSVM = 'I:\Science\CIS\wyb15135\datasets_created\predicted_lsvm_class.csv'
 PATH_PREDICTED_LFOREST = 'I:\Science\CIS\wyb15135\datasets_created\predicted_lforest_class.csv'
-PATH_PREDICTED_LDEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_ldeep.csv'
+PATH_PREDICTED_LDEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_ldeep_class.csv'
 
 PATH_ID = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_id.csv'
 
@@ -64,7 +64,7 @@ def select_songs(data):
 
 
 def main():
-    for file in [PATH_PREDICTED_FOREST, PATH_PREDICTED_SVM, PATH_PREDICTED_DEEP, PATH_PREDICTED_LDEEP,
+    for file in [PATH_PREDICTED_FOREST, PATH_PREDICTED_SVM, PATH_PREDICTED_DEEP,
                  PATH_PREDICTED_LFOREST, PATH_PREDICTED_LSVM]:
         data = load_file(file)
         data_id = load_file(PATH_ID)
@@ -96,7 +96,7 @@ def main():
             songs = []
             for i, row in playlist.iterrows():
                 tags = []
-                for l in label_cols:
+                for l in label_cols_min:
                     if row[l] == 1:
                         tags.append(l)
                 song = Song(artist=row['artist'], id=row['id'], title=row['title'], tags=tags)
@@ -107,21 +107,21 @@ def main():
             p = Playlist(songs, model, False)
             playlists.append(p)
 
-            # Random Playlist
-            rand_playlist = (data.sample(n=8, replace=False))
-            rand_songs = []
-            for n, row in rand_playlist.iterrows():
-                tags = []
-                for l in label_cols:
-                    if row[l] == 1:
-                        tags.append(l)
-                r_song = Song(artist=row['artist'], id=row['id'], title=row['title'], tags=tags)
-                rand_songs.append(r_song)
-            r_p = Playlist(rand_songs, 'none', True)
-            playlists.append(r_p)
+        # Random Playlist
+        rand_playlist = (data.sample(n=8, replace=False))
+        rand_songs = []
+        for n, row in rand_playlist.iterrows():
+            tags = []
+            for l in label_cols_min:
+                if row[l] == 1:
+                    tags.append(l)
+            r_song = Song(artist=row['artist'], id=row['id'], title=row['title'], tags=tags)
+            rand_songs.append(r_song)
+        r_p = Playlist(rand_songs, 'none', True)
+        playlists.append(r_p)
 
-        PLAYLIST_PATH = "/ui/playlists_" + file[:file.index('.')] + '.json'
-        with open(PLAYLIST_PATH, 'w') as outfile:
+        PLAYLIST_PATH = "C:/Users/User/PycharmProjects/merml/src/ui/playlists_" + file[51:file.index('.')] + '.json'
+        with open(PLAYLIST_PATH, 'w+') as outfile:
             json.dump(playlists, outfile, cls=MusicEncoder)
 
 
