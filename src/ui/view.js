@@ -15,22 +15,21 @@ var currentPTab = 0;
 var currentFTab = 0;
 
 var playlistIFrameMap = new Map([
-    [0, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsgohtahTbj-WnkWz6Hkue5z" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [1, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsj2j3levwnccTvAGQeWERK3" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [2, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsisNq7cx5y0DeLCUkz9Wq-K" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [3, ''],
-    [4, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshIwVp_CmDRTWgOnOAIFChs"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [5, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsjEZp9lMq0ZKpCrJcl-CrZI"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [6, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsgot1_Qpj39GF6VsyP3EMLF"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [7, '<iframe width="560" height="315" src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshFHn8YPw4XkLuFChTjwbRF" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
-    [8, ''],
-    [9, ''],
-    [10, ''],
-    [11, ''],
-    [12, ''],
-    [13, ''],
-    [14, ''],
-    [15, '']
+    [0, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsgohtahTbj-WnkWz6Hkue5z" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [1, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsj2j3levwnccTvAGQeWERK3" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [2, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsisNq7cx5y0DeLCUkz9Wq-K" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [3, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsgUzxRUtLd9trgRHUzd6XX1"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [4, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshIwVp_CmDRTWgOnOAIFChs"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [5, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsjEZp9lMq0ZKpCrJcl-CrZI"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [6, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsgot1_Qpj39GF6VsyP3EMLF"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [7, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshFHn8YPw4XkLuFChTjwbRF" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [8, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsgwu9rQk3c8CZ6GCpGArPJP"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [9, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsj6lUOOTLjJuT7KQ9kBDg4z" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [10, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsguqDu-BQohbg8xrg1Tmdgi"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [11, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBsieSrzy_Q6vhoFeUDNfRbcm"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [12, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshAvT-Zla3QuoX69Jt5wdsb"  allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [13, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshz7DnY3XmktJriwPuhMDbi" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>'],
+    [14, '<iframe src="https://www.youtube.com/embed/videoseries?list=PLKLdE3o4nBshdBS5mNLDSaHiI05tcJ8XL" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>']
 ]);
 
 function view() {

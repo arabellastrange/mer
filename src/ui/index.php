@@ -63,6 +63,7 @@ function check_user_name_already_exists($new_name, $conn)
     <script src="https://apis.google.com/js/client.js" type="text/javascript"></script>
     <script src="https://kit.fontawesome.com/8f0a84e548.js" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
           integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <link rel="stylesheet"
@@ -122,11 +123,12 @@ function check_user_name_already_exists($new_name, $conn)
 
                 <div class="profile-tab">
                     <div class="modal-body">
-                        <form id="user-profile" method="post" action="user-profile.php" onsubmit="return profileSubmission()">
+                        <form id="user-profile" method="post" action="user-profile.php"
+                              onsubmit="return profileSubmission()">
                             <div class="form-group">
                                 <label id='selectMusicService' for="selectMusicServiceOptions" class="col-form-label">What
                                     services do you most often use to access music?</label>
-                                <select class="form-control mdb-select md-form" id="selectMusicServiceOptions"
+                                <select id="selectMusicServiceOptions"
                                         name="music-purchase">
                                     <option>Youtube</option>
                                     <option>Streaming Subscription (Spotfiy, Google Music, Tidal,...)</option>
@@ -137,7 +139,7 @@ function check_user_name_already_exists($new_name, $conn)
                                 <label id="selectMusicCollection" for="selectMusicCollectionOptions"
                                        class="col-form-label">
                                     How do you most often group your music collection?</label>
-                                <select class="form-control mdb-select md-form" id="selectMusicCollectionOptions"
+                                <select id="selectMusicCollectionOptions"
                                         name="music-collection">
                                     <option>By Artist</option>
                                     <option>By Album</option>
@@ -153,7 +155,8 @@ function check_user_name_already_exists($new_name, $conn)
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-raised btn-lg btn-light" id="p-prevBtn" onclick="nextPrevP(-1)">
+                    <button type="button" class="btn btn-raised btn-lg btn-light" id="p-prevBtn"
+                            onclick="nextPrevP(-1)">
                         Back
                     </button>
                     <button type="button" class="btn btn-raised btn-lg" id="p-nextBtn" onclick="nextPrevP(1)">Continue
@@ -291,7 +294,8 @@ function check_user_name_already_exists($new_name, $conn)
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-raised btn-lg btn-light" id="f-prevBtn" onclick="nextPrevF(-1)">Back
+                <button type="button" class="btn btn-raised btn-lg btn-light" id="f-prevBtn" onclick="nextPrevF(-1)">
+                    Back
                 </button>
                 <button type="button" class="btn btn-raised btn-lg" id="f-nextBtn" onclick="nextPrevF(1)">Continue
                 </button>
@@ -332,9 +336,9 @@ function check_user_name_already_exists($new_name, $conn)
     </div>
 <?php } ?>
 
-<div id="playlist-player" class="modal fade player" role="dialog">
+<div id="playlist-player" class="modal fade player-box" role="dialog">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <div class="modal-content">
+        <div class="modal-content player">
             <div class="modal-header">
                 <div class="col-md-10"></div>
                 <div class="col-md-2">
