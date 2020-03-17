@@ -53,13 +53,11 @@ function feedbackSubmission() {
         url: 'form.php',
         data: $('#user-feedback').serializeArray(),
         success: function (response) {
-            console.log('sucess')
+            console.log('success')
         }
     });
 
     $('#feedback').modal('hide');
-
-    window.location.reload(false);
 
     return false;
 }

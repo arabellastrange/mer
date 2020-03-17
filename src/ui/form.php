@@ -49,7 +49,7 @@
     $tagAngry = 0;
     $tagOther = 0;
 
-    $fitnessArray = Array();
+    $fitnessArray = Array(9, 9, 9, 9, 9, 9, 9, 9);
 
     if($_POST['agreeWithTags'] === 'yes'){
         $agreeTag = 1;
@@ -101,10 +101,15 @@
         $tagRelax = 1;
     }
 
+    $songFitness = Array();
     foreach($_POST as $key => $value){
         if(strpos($key, 'range')){
-            array_push($fitnessArray, $value);
+            array_push($songFitness, $value);
         }
+    }
+
+    for($i = 0; $i < count($songFitness); $i++){
+        $fitnessArray[$i] = $songFitness[$i];
     }
 
     // Connect to MySQL
@@ -113,7 +118,6 @@
     }
 
     // Query
-
     $sql = "INSERT INTO `musicEvalFeedback` (`response_id`, `user_id`, `playlist_id`, `event_gym`, `event_party`, `event_study`, `event_relax`, `event_commute`, `event_other`, `event_input`, `tag_happy`, `tag_sad`, `tag_relax`, `tag_angry`, `tag_other`, `tag_input`, `ml_tag_eval`, `playlist_cohesion`, `song_0_fitness`, `song_1_fitness`, `song_2_fitness`, `song_3_fitness`, `song_4_fitness`, `song_5_fitness`, `song_6_fitness`, `song_7_fitness`) VALUES (NULL, '$userID', '$playlistID', '$eventGym', '$eventParty', '$eventStudy', '$eventRelax', '$eventCommute', '$eventOther', '$eventIn', '$tagHappy', '$tagSad', '$tagRelax', '$tagAngry', '$tagOther', '$tagIn', '$agreeTag', '$cohesionRange', '$fitnessArray[0]', '$fitnessArray[1]', '$fitnessArray[2]', '$fitnessArray[3]', '$fitnessArray[4]', '$fitnessArray[5]', '$fitnessArray[6]', '$fitnessArray[7]')";
 
     $result = $conn->query($sql);
