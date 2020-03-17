@@ -76,7 +76,12 @@ function view() {
 
             let unique_tags = tags.filter((item, i, ar) => ar.indexOf(item) === i);
             if (unique_tags.length > 0) {
-                formTags.innerText = 'This playlist has been labelled as ' + unique_tags + ' do you agree?';
+                var tag_string = '';
+                for (var m = 0; m < unique_tags.length; m ++){
+                    tag_string = tag_string + ', ' + unique_tags[m];
+                }
+
+                formTags.innerText = 'This playlist has been labelled as' + tag_string + ' do you agree?';
             } else {
                 formTags.innerText = 'This playlist could not be labelled, do you think that is justified?';
             }

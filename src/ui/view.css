@@ -314,6 +314,10 @@ input[type=range]:focus::-ms-fill-upper {
     padding: 2em 4em;
 }
 
+.player .fas{
+    color: #d2d0d0;
+}
+
 .question-col {
     padding: 0;
 }

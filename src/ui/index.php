@@ -269,7 +269,7 @@ function check_user_name_already_exists($new_name, $conn)
                         </div>
 
                         <div class="form-group">
-                            <label id="" class="col-form-label">How cohesive do you think this playlist is?</label>
+                            <label id="" class="col-form-label">On a scale of 1 to 5, how cohesive do you think this playlist is?</label>
                             <input type="range" name="cohesion" class="custom-range" min="1" max="5" step="1"
                                    list="playlist-tickmarks">
                             <datalist id='playlist-tickmarks'>
@@ -283,7 +283,7 @@ function check_user_name_already_exists($new_name, $conn)
                     </div>
                     <div class="feedback-tab">
                         <div class='form-group'>
-                            <label id='mlSliderQuestion' class='col-form-label'>How well do you think
+                            <label id='mlSliderQuestion' class='col-form-label'>On a scale of 1 to 5, how well do you think
                                 this song fits the overall mood of the playlist?</label>
                             <div id="form-range">
                             </div>

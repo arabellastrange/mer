@@ -53,11 +53,13 @@ function feedbackSubmission() {
         url: 'form.php',
         data: $('#user-feedback').serializeArray(),
         success: function (response) {
-            console.log(response)
+            console.log('sucess')
         }
     });
 
     $('#feedback').modal('hide');
+
+    window.location.reload(false);
 
     return false;
 }
@@ -101,8 +103,6 @@ function createPlaylist(playlists) {
 
 
 function readPlaylists() {
-    console.log('reading');
-    console.log(collatedPlaylist);
     generatePlaylists(collatedPlaylist);
 }
 
@@ -112,7 +112,7 @@ function profileSubmission() {
         url: 'user-profile.php',
         data: $('#user-profile').serializeArray(),
         success: function (response) {
-            console.log(response)
+            console.log('success')
         }
     });
 
