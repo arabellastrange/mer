@@ -24,7 +24,9 @@ Epoch: 0, accuracy:0.6247,  auc:0.5059,  fn:3092.0000,  fp:9874.0000,  loss:0.66
 ....................................................................................................
 Epoch: 100, accuracy:0.8905,  auc:0.8887,  fn:3099.0000,  fp:684.0000,  loss:0.2589,  precision:0.6888,  recall:0.3282,  tn:29254.0000,  tp:1514.0000,  val_accuracy:0.8738,  val_auc:0.8481,  val_fn:918.0000,  val_fp:173.0000,  val_loss:0.3028,  val_precision:0.6068,  val_recall:0.2253,  val_tn:7288.0000,  val_tp:267.0000,
 ....................................................................................................803/803 - 0s - loss: 0.3716 - tp: 862.0000 - fp: 629.0000 - tn: 22265.0000 - fn: 2743.0000 - accuracy: 0.8728 - precision: 0.5781 - recall: 0.2391 - auc: 0.8105
-Metics:
+
+Metrics:
+
 [0.37163873462198976, 862.0, 629.0, 22265.0, 2743.0, 0.87275004, 0.5781355, 0.23911235, 0.81045026]
 C:\Users\User\Anaconda3\lib\site-packages\sklearn\metrics\classification.py:1437: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
   'precision', 'predicted', average, warn_for)

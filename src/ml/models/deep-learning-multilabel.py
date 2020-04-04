@@ -1,6 +1,5 @@
 import ast
 import tensorflow_docs as tfdocs
-import tensorflow_docs.plots
 import tensorflow_docs.modeling
 import tensorflow as tf
 from tensorflow import keras
@@ -17,9 +16,7 @@ PATH_PREDICTED_L_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep
 PATH_PREDICTED_HAB_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_deep_class_ab.csv'
 PATH_PREDICTED_LAB_DEEP = 'I:\Science\CIS\wyb15135\datasets_created\predicted_ldeep_class_ab.csv'
 
-PATH_TRUTH_HIGH = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high.csv'
 PATH_TRUTH_HIGH_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_min_class.csv'
-PATH_TRUTH_LOW = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_high_low.csv'
 PATH_TRUTH_LOW_CLASS = 'I:\Science\CIS\wyb15135\datasets_created\ground_truth_classification_low_min_class.csv'
 
 PATH_HTRUTH = 'I:\Science\CIS\wyb15135\datasets_created\high_lvl_ftest_data.csv'
@@ -187,7 +184,7 @@ def run_model(data):
     # pred_frame = pd.DataFrame(pred3, columns=mlb.classes_, index=test.index.copy())
     # df_out = pd.merge(test, pred_frame, left_index=True, right_index=True)
     # df_out = pd.merge(data['id'], df_out, left_index=True, right_index=True)
-    #
+
     # output_predictions(df_out, PATH_PREDICTED_L_DEEP)
 
     for pred_dict, expec in zip(e_predictions, ytest):
@@ -333,8 +330,8 @@ def multi_label_estimator(feature_columns):
 
 
 def main():
-    # data = load_file(PATH_TRUTH_HIGH_CLASS)
-    data = load_file(PATH_TRUTH_LOW_CLASS)
+    data = load_file(PATH_TRUTH_HIGH_CLASS)
+    # data = load_file(PATH_TRUTH_LOW_CLASS)
     run_model(data)
 
 
